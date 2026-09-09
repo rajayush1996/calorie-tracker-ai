@@ -38,6 +38,7 @@ import { RescueModal } from '@/components/rescue/RescueModal';
 import { PwaInstallPrompt } from '@/components/common/PwaInstallPrompt';
 import { DateNavigator } from '@/components/common/DateNavigator';
 import { getTodayDateString } from '@/utils/dateUtils';
+import { Sparkles } from 'lucide-react';
 
 export default function Home() {
   const [currentUser, setCurrentUser] = useState<UserAccount | null>(null);
@@ -353,32 +354,58 @@ export default function Home() {
                 onUpdateWater={handleUpdateWater}
               />
 
-              {/* Minimalist Helper Strip - Unobtrusive & Clean */}
-              <div className="pt-2 flex items-center justify-between gap-1.5 text-[11px]">
-                <button
-                  onClick={() => {
-                    setRescueInitialTab('craving');
-                    setIsRescueOpen(true);
-                  }}
-                  className="flex-1 py-2 px-2 bg-white dark:bg-slate-900 border border-slate-200/70 dark:border-slate-800 rounded-xl text-slate-700 dark:text-slate-300 font-semibold hover:border-amber-400 active:scale-95 transition-all text-center flex items-center justify-center gap-1 shadow-2xs"
-                >
-                  <span>🍫 Craving Help</span>
-                </button>
-                <button
-                  onClick={() => {
-                    setRescueInitialTab('cheat');
-                    setIsRescueOpen(true);
-                  }}
-                  className="flex-1 py-2 px-2 bg-white dark:bg-slate-900 border border-slate-200/70 dark:border-slate-800 rounded-xl text-slate-700 dark:text-slate-300 font-semibold hover:border-rose-400 active:scale-95 transition-all text-center flex items-center justify-center gap-1 shadow-2xs"
-                >
-                  <span>🍕 Cheat Fix</span>
-                </button>
-                <button
-                  onClick={() => setActiveTab('audit')}
-                  className="flex-1 py-2 px-2 bg-white dark:bg-slate-900 border border-slate-200/70 dark:border-slate-800 rounded-xl text-purple-700 dark:text-purple-400 font-semibold hover:border-purple-400 active:scale-95 transition-all text-center flex items-center justify-center gap-1 shadow-2xs"
-                >
-                  <span>🌙 Day Audit</span>
-                </button>
+              {/* Quick AI Assistants - Simple & Catchy */}
+              <div className="pt-1">
+                <div className="flex items-center justify-between px-1 mb-2">
+                  <span className="text-xs font-black text-slate-900 dark:text-white flex items-center gap-1.5">
+                    <Sparkles className="w-3.5 h-3.5 text-emerald-500" />
+                    AI Health Toolkit
+                  </span>
+                  <span className="text-[10px] text-slate-400 font-medium">1-tap solutions</span>
+                </div>
+                <div className="grid grid-cols-3 gap-2 text-center">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setRescueInitialTab('craving');
+                      setIsRescueOpen(true);
+                    }}
+                    className="p-3 bg-amber-50/60 hover:bg-amber-100/60 dark:bg-amber-950/20 dark:hover:bg-amber-950/40 border border-amber-200/60 dark:border-amber-900/30 rounded-2xl active:scale-95 transition-all group"
+                  >
+                    <span className="text-xl block mb-1 group-hover:scale-110 transition-transform">🍫</span>
+                    <strong className="text-xs font-bold text-amber-900 dark:text-amber-200 block leading-tight">
+                      Craving
+                    </strong>
+                    <span className="text-[9px] text-amber-700/70 dark:text-amber-400/80">0-guilt swap</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setRescueInitialTab('cheat');
+                      setIsRescueOpen(true);
+                    }}
+                    className="p-3 bg-rose-50/60 hover:bg-rose-100/60 dark:bg-rose-950/20 dark:hover:bg-rose-950/40 border border-rose-200/60 dark:border-rose-900/30 rounded-2xl active:scale-95 transition-all group"
+                  >
+                    <span className="text-xl block mb-1 group-hover:scale-110 transition-transform">🍕</span>
+                    <strong className="text-xs font-bold text-rose-900 dark:text-rose-200 block leading-tight">
+                      Cheat Fix
+                    </strong>
+                    <span className="text-[9px] text-rose-700/70 dark:text-rose-400/80">24h offset</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setActiveTab('audit')}
+                    className="p-3 bg-purple-50/60 hover:bg-purple-100/60 dark:bg-purple-950/20 dark:hover:bg-purple-950/40 border border-purple-200/60 dark:border-purple-900/30 rounded-2xl active:scale-95 transition-all group"
+                  >
+                    <span className="text-xl block mb-1 group-hover:scale-110 transition-transform">🌙</span>
+                    <strong className="text-xs font-bold text-purple-900 dark:text-purple-200 block leading-tight">
+                      Day Audit
+                    </strong>
+                    <span className="text-[9px] text-purple-700/70 dark:text-purple-400/80">Nightly grade</span>
+                  </button>
+                </div>
               </div>
             </div>
           )}
