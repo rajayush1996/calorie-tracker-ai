@@ -128,7 +128,7 @@ export function loadAllDailyLogs(userId?: string): Record<string, DailyLog> {
     const raw = localStorage.getItem(key);
     if (!raw) {
       const uid = userId || localStorage.getItem('nutriai_active_user_id') || 'user_demo_123';
-      const initialLogs = uid === 'user_demo_123' ? getInitialMockLogs() : {};
+      const initialLogs: Record<string, DailyLog> = {};
       saveAllDailyLogs(initialLogs, uid);
       return initialLogs;
     }
@@ -155,58 +155,10 @@ export function loadTodayLog(userId?: string): DailyLog {
   const logs = loadAllDailyLogs(userId);
   if (logs[today]) return logs[today];
 
-  const uid = userId || (typeof window !== 'undefined' ? localStorage.getItem('nutriai_active_user_id') : null) || 'user_demo_123';
-  const isDemo = uid === 'user_demo_123';
-
   const newLog: DailyLog = {
     date: today,
-    waterConsumedMl: isDemo ? 1500 : 0,
-    meals: isDemo
-      ? [
-          {
-            id: 'mock-breakfast-1',
-            date: today,
-            mealType: 'breakfast',
-            items: [
-              {
-                id: 'item-1',
-                name: 'Rolled Oats with Milk',
-                quantity: 1,
-                unit: 'bowl',
-                portionDescription: '50g oats cooked in 200ml toned milk',
-                weightG: 250,
-                calories: 310,
-                proteinG: 14,
-                carbsG: 52,
-                fatG: 5,
-                fiberG: 5,
-                confidence: 'high',
-              },
-              {
-                id: 'item-2',
-                name: 'Boiled Eggs',
-                quantity: 2,
-                unit: 'large',
-                portionDescription: '2 whole boiled eggs',
-                weightG: 100,
-                calories: 144,
-                proteinG: 12,
-                carbsG: 1,
-                fatG: 10,
-                fiberG: 0,
-                confidence: 'high',
-              },
-            ],
-            totalCalories: 454,
-            totalProtein: 26,
-            totalCarbs: 53,
-            totalFat: 15,
-            rawInput: 'Had 1 bowl oatmeal with milk and 2 boiled eggs',
-            assumptions: ['Used toned cow milk (1.5% fat)', 'Whole eggs with yolk'],
-            createdAt: new Date().toISOString(),
-          },
-        ]
-      : [],
+    waterConsumedMl: 0,
+    meals: [],
   };
 
   logs[today] = newLog;
@@ -274,62 +226,6 @@ export function saveActiveDietPlan(plan: DietPlan, userId?: string): void {
   }
 }
 
-function getInitialMockLogs(): Record<string, DailyLog> {
-  const logs: Record<string, DailyLog> = {};
-  const today = new Date();
-
-  for (let i = 6; i >= 1; i--) {
-    const d = new Date(today);
-    d.setDate(today.getDate() - i);
-    const dateStr = d.toISOString().split('T')[0];
-
-    const cals = 1750 + Math.floor(Math.random() * 200) - 100;
-    const protein = 140 + Math.floor(Math.random() * 25);
-    const carbs = 170 + Math.floor(Math.random() * 30);
-    const fat = 48 + Math.floor(Math.random() * 10);
-
-    logs[dateStr] = {
-      date: dateStr,
-      waterConsumedMl: 2600 + Math.floor(Math.random() * 600),
-      meals: [
-        {
-          id: `past-meal-${i}-1`,
-          date: dateStr,
-          mealType: 'breakfast',
-          items: [],
-          totalCalories: Math.round(cals * 0.25),
-          totalProtein: Math.round(protein * 0.25),
-          totalCarbs: Math.round(carbs * 0.25),
-          totalFat: Math.round(fat * 0.25),
-          createdAt: d.toISOString(),
-        },
-        {
-          id: `past-meal-${i}-2`,
-          date: dateStr,
-          mealType: 'lunch',
-          items: [],
-          totalCalories: Math.round(cals * 0.4),
-          totalProtein: Math.round(protein * 0.4),
-          totalCarbs: Math.round(carbs * 0.4),
-          totalFat: Math.round(fat * 0.4),
-          createdAt: d.toISOString(),
-        },
-        {
-          id: `past-meal-${i}-3`,
-          date: dateStr,
-          mealType: 'dinner',
-          items: [],
-          totalCalories: Math.round(cals * 0.35),
-          totalProtein: Math.round(protein * 0.35),
-          totalCarbs: Math.round(carbs * 0.35),
-          totalFat: Math.round(fat * 0.35),
-          createdAt: d.toISOString(),
-        },
-      ],
-    };
-  }
-  return logs;
-}
 
 function getInitialMeasurements(): BodyMeasurement[] {
   const today = new Date();

@@ -44,14 +44,6 @@ export const AILoggerTab: React.FC<AILoggerTabProps> = ({
   const [refineSummary, setRefineSummary] = useState<string | null>(null);
   const [isSaved, setIsSaved] = useState(false);
 
-  const quickPrompts = [
-    '2 rotis with a small bowl of dal tadka and 1 cup curd',
-    '3 boiled eggs, 2 slices brown bread, and black coffee',
-    '150g chicken breast with 1 cup steamed rice and salad',
-    '1 scoop whey protein with 250ml milk and 1 banana',
-    '1 plate poha with peanuts and 1 cup chai without sugar',
-  ];
-
   const handleParse = async (sentenceToUse?: string) => {
     const text = sentenceToUse || inputSentence;
     if (!text.trim()) return;
@@ -216,83 +208,34 @@ export const AILoggerTab: React.FC<AILoggerTabProps> = ({
         </div>
 
         {/* Input Text Box */}
-        <div className="mt-3 relative">
+        <div className="mt-3">
           <textarea
             value={inputSentence}
             onChange={(e) => setInputSentence(e.target.value)}
-            placeholder="e.g. Ate 2 butter rotis with a bowl of dal makhani, half plate rice and 1 diet coke..."
+            placeholder="What did you eat? (e.g. 2 rotis and dal, 1 cup chai, or chicken rice)..."
             rows={3}
             className="w-full p-3.5 text-sm rounded-2xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 resize-none transition-all"
           />
 
-          <div className="flex justify-between items-center mt-2">
-            <span className="text-[11px] text-slate-400">
-              💡 Mention quantities like bowls, slices, spoons, or cups
-            </span>
-
+          <div className="flex justify-end items-center mt-2.5">
             <button
               onClick={() => handleParse()}
               disabled={isLoading || !inputSentence.trim()}
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white font-semibold text-xs shadow-xs active:scale-95 disabled:opacity-50 disabled:pointer-events-none transition-all"
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white font-bold text-xs shadow-xs active:scale-98 disabled:opacity-50 disabled:pointer-events-none transition-all"
             >
               {isLoading ? (
                 <>
                   <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-                  Analyzing...
+                  Calculating Calories...
                 </>
               ) : (
                 <>
                   <Sparkles className="w-3.5 h-3.5" />
-                  Analyze with AI
+                  Analyze Meal with AI
                 </>
               )}
             </button>
           </div>
-        </div>
-
-        {/* Quick Suggestion Chips */}
-        <div className="mt-3 pt-3 border-t border-slate-100 dark:border-slate-800/80">
-          <p className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-2">
-            Quick Examples:
-          </p>
-          <div className="flex flex-wrap gap-1.5">
-            {quickPrompts.map((prompt, i) => (
-              <button
-                key={i}
-                onClick={() => {
-                  setInputSentence(prompt);
-                  handleParse(prompt);
-                }}
-                className="text-[11px] px-2.5 py-1 rounded-lg bg-slate-50 dark:bg-slate-800/60 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 text-slate-600 dark:text-slate-300 hover:text-emerald-700 dark:hover:text-emerald-400 border border-slate-200/60 dark:border-slate-700/60 text-left transition-colors"
-              >
-                {prompt}
-              </button>
-            ))}
-          </div>
-
-          {onOpenRescue && (
-            <div className="mt-3 pt-3 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-between gap-2">
-              <span className="text-[11px] font-bold text-slate-500 flex items-center gap-1">
-                <span>🆘 Craving or Overate?</span>
-              </span>
-              <div className="flex gap-1.5">
-                <button
-                  type="button"
-                  onClick={() => onOpenRescue('craving')}
-                  className="text-[11px] font-bold px-2.5 py-1 rounded-lg bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-400 border border-amber-200/80 hover:bg-amber-100 transition-colors"
-                >
-                  🍫 Craving Swapper
-                </button>
-                <button
-                  type="button"
-                  onClick={() => onOpenRescue('cheat')}
-                  className="text-[11px] font-bold px-2.5 py-1 rounded-lg bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-400 border border-rose-200/80 hover:bg-rose-100 transition-colors"
-                >
-                  🍕 Cheat Recovery
-                </button>
-              </div>
-            </div>
-          )}
         </div>
       </div>
 
