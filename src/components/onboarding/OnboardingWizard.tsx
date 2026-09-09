@@ -24,53 +24,59 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = ({
 
   // Form State
   const [name, setName] = useState(initialProfile.name || '');
-  const [age, setAge] = useState<number>(initialProfile.age || 25);
+  const [age, setAge] = useState<number | string>(initialProfile.age ?? 25);
   const [gender, setGender] = useState<Gender>(initialProfile.gender || 'male');
   const [activityLevel, setActivityLevel] = useState<ActivityLevel>(
     initialProfile.activityLevel || 'moderate'
   );
 
-  const [heightCm, setHeightCm] = useState<number>(initialProfile.heightCm || 172);
-  const [currentWeightKg, setCurrentWeightKg] = useState<number>(
-    initialProfile.currentWeightKg || 78
+  const [heightCm, setHeightCm] = useState<number | string>(initialProfile.heightCm ?? 172);
+  const [currentWeightKg, setCurrentWeightKg] = useState<number | string>(
+    initialProfile.currentWeightKg ?? 78
   );
-  const [waistCm, setWaistCm] = useState<number>(initialProfile.waistCm || 86);
-  const [chestCm, setChestCm] = useState<number>(initialProfile.chestCm || 98);
+  const [waistCm, setWaistCm] = useState<number | string>(initialProfile.waistCm ?? 86);
+  const [chestCm, setChestCm] = useState<number | string>(initialProfile.chestCm ?? 98);
 
-  const [targetWeightKg, setTargetWeightKg] = useState<number>(
-    initialProfile.targetWeightKg || 70
+  const [targetWeightKg, setTargetWeightKg] = useState<number | string>(
+    initialProfile.targetWeightKg ?? 70
   );
   const [pace, setPace] = useState<TransformationPace>(initialProfile.pace || 'recommended');
 
+  // Normalized numbers for calculations
+  const numCurrentWeight = Number(currentWeightKg) || 75;
+  const numTargetWeight = Number(targetWeightKg) || 70;
+  const numHeight = Number(heightCm) || 170;
+  const numAge = Number(age) || 24;
+
   // Calculations
-  const isLoss = targetWeightKg < currentWeightKg;
-  const goal: FitnessGoal = isLoss ? 'fat_loss' : targetWeightKg > currentWeightKg ? 'muscle_gain' : 'maintenance';
+  const isLoss = numTargetWeight < numCurrentWeight;
+  const goal: FitnessGoal = isLoss ? 'fat_loss' : numTargetWeight > numCurrentWeight ? 'muscle_gain' : 'maintenance';
 
   const targets = calculateTargets(
-    currentWeightKg,
-    heightCm,
-    age,
+    numCurrentWeight,
+    numHeight,
+    numAge,
     gender,
     activityLevel,
     goal,
     pace
   );
 
-  const bmi = calculateBMI(currentWeightKg, heightCm);
-  const targetBmi = calculateBMI(targetWeightKg, heightCm);
-  const journey = calculateWeightLossJourney(currentWeightKg, targetWeightKg, pace);
+  const bmi = calculateBMI(numCurrentWeight, numHeight);
+  const targetBmi = calculateBMI(numTargetWeight, numHeight);
+  const journey = calculateWeightLossJourney(numCurrentWeight, numTargetWeight, pace);
 
   const handleFinish = () => {
     const finalProfile: UserProfile = {
       ...initialProfile,
       name,
-      age,
+      age: Number(age) || 25,
       gender,
-      heightCm,
-      currentWeightKg,
-      targetWeightKg,
-      waistCm,
-      chestCm,
+      heightCm: Number(heightCm) || 172,
+      currentWeightKg: Number(currentWeightKg) || 78,
+      targetWeightKg: Number(targetWeightKg) || 70,
+      waistCm: waistCm === '' ? undefined : Number(waistCm),
+      chestCm: chestCm === '' ? undefined : Number(chestCm),
       activityLevel,
       goal,
       pace,
@@ -159,7 +165,7 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = ({
                   <input
                     type="number"
                     value={age}
-                    onChange={(e) => setAge(parseInt(e.target.value) || 24)}
+                    onChange={(e) => setAge(e.target.value)}
                     className="w-full p-3 text-xs rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white"
                   />
                 </div>
@@ -219,7 +225,7 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = ({
                   <input
                     type="number"
                     value={heightCm}
-                    onChange={(e) => setHeightCm(parseInt(e.target.value) || 170)}
+                    onChange={(e) => setHeightCm(e.target.value)}
                     className="w-full p-3 text-xs rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white"
                   />
                 </div>
@@ -232,7 +238,7 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = ({
                     type="number"
                     step="0.1"
                     value={currentWeightKg}
-                    onChange={(e) => setCurrentWeightKg(parseFloat(e.target.value) || 75)}
+                    onChange={(e) => setCurrentWeightKg(e.target.value)}
                     className="w-full p-3 text-xs rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white"
                   />
                 </div>
@@ -247,7 +253,7 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = ({
                     type="number"
                     step="0.5"
                     value={waistCm}
-                    onChange={(e) => setWaistCm(parseFloat(e.target.value) || 85)}
+                    onChange={(e) => setWaistCm(e.target.value)}
                     className="w-full p-3 text-xs rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white"
                   />
                 </div>
@@ -259,7 +265,7 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = ({
                     type="number"
                     step="0.5"
                     value={chestCm}
-                    onChange={(e) => setChestCm(parseFloat(e.target.value) || 95)}
+                    onChange={(e) => setChestCm(e.target.value)}
                     className="w-full p-3 text-xs rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white"
                   />
                 </div>
@@ -327,13 +333,13 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = ({
                   type="number"
                   step="0.5"
                   value={targetWeightKg}
-                  onChange={(e) => setTargetWeightKg(parseFloat(e.target.value) || 68)}
+                  onChange={(e) => setTargetWeightKg(e.target.value)}
                   className="flex-1 p-3 text-base font-bold rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white"
                 />
                 <span className="text-xs font-bold px-3 py-2 rounded-xl bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300">
-                  {currentWeightKg > targetWeightKg
-                    ? `-${(currentWeightKg - targetWeightKg).toFixed(1)} kg`
-                    : `+${(targetWeightKg - currentWeightKg).toFixed(1)} kg`}
+                  {numCurrentWeight > numTargetWeight
+                    ? `-${(numCurrentWeight - numTargetWeight).toFixed(1)} kg`
+                    : `+${(numTargetWeight - numCurrentWeight).toFixed(1)} kg`}
                 </span>
               </div>
             </div>

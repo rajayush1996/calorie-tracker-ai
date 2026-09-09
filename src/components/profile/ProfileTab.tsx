@@ -10,15 +10,38 @@ interface ProfileTabProps {
   onSaveProfile: (profile: UserProfile) => void;
 }
 
+type ProfileFormData = Omit<
+  UserProfile,
+  | 'age'
+  | 'heightCm'
+  | 'currentWeightKg'
+  | 'targetWeightKg'
+  | 'targetCalories'
+  | 'targetProteinG'
+  | 'targetCarbsG'
+  | 'targetFatG'
+  | 'waterTargetMl'
+> & {
+  age: number | string;
+  heightCm: number | string;
+  currentWeightKg: number | string;
+  targetWeightKg: number | string;
+  targetCalories: number | string;
+  targetProteinG: number | string;
+  targetCarbsG: number | string;
+  targetFatG: number | string;
+  waterTargetMl: number | string;
+};
+
 export const ProfileTab: React.FC<ProfileTabProps> = ({ userProfile, onSaveProfile }) => {
-  const [formData, setFormData] = useState<UserProfile>({ ...userProfile });
+  const [formData, setFormData] = useState<ProfileFormData>({ ...userProfile });
   const [isSaved, setIsSaved] = useState(false);
 
-  // Live recalculate preview
+  // Live recalculate preview safely
   const preview = calculateTargets(
-    formData.currentWeightKg,
-    formData.heightCm,
-    formData.age,
+    Number(formData.currentWeightKg) || userProfile.currentWeightKg || 75,
+    Number(formData.heightCm) || userProfile.heightCm || 170,
+    Number(formData.age) || userProfile.age || 25,
     formData.gender,
     formData.activityLevel,
     formData.goal
@@ -37,7 +60,19 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({ userProfile, onSaveProfi
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onSaveProfile(formData);
+    const cleanProfile: UserProfile = {
+      ...formData,
+      age: Number(formData.age) || userProfile.age || 25,
+      heightCm: Number(formData.heightCm) || userProfile.heightCm || 170,
+      currentWeightKg: Number(formData.currentWeightKg) || userProfile.currentWeightKg || 75,
+      targetWeightKg: Number(formData.targetWeightKg) || userProfile.targetWeightKg || 68,
+      targetCalories: Number(formData.targetCalories) || preview.targetCalories,
+      targetProteinG: Number(formData.targetProteinG) || preview.targetProteinG,
+      targetCarbsG: Number(formData.targetCarbsG) || preview.targetCarbsG,
+      targetFatG: Number(formData.targetFatG) || preview.targetFatG,
+      waterTargetMl: Number(formData.waterTargetMl) || preview.waterTargetMl,
+    };
+    onSaveProfile(cleanProfile);
     setIsSaved(true);
     setTimeout(() => setIsSaved(false), 2000);
   };
@@ -114,7 +149,7 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({ userProfile, onSaveProfi
               <input
                 type="number"
                 value={formData.age}
-                onChange={(e) => setFormData({ ...formData, age: parseInt(e.target.value) || 25 })}
+                onChange={(e) => setFormData({ ...formData, age: e.target.value })}
                 className="w-full p-2.5 text-xs rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white"
               />
             </div>
@@ -142,9 +177,7 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({ userProfile, onSaveProfi
               <input
                 type="number"
                 value={formData.heightCm}
-                onChange={(e) =>
-                  setFormData({ ...formData, heightCm: parseInt(e.target.value) || 170 })
-                }
+                onChange={(e) => setFormData({ ...formData, heightCm: e.target.value })}
                 className="w-full p-2.5 text-xs rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white"
               />
             </div>
@@ -156,9 +189,7 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({ userProfile, onSaveProfi
                 type="number"
                 step="0.5"
                 value={formData.currentWeightKg}
-                onChange={(e) =>
-                  setFormData({ ...formData, currentWeightKg: parseFloat(e.target.value) || 75 })
-                }
+                onChange={(e) => setFormData({ ...formData, currentWeightKg: e.target.value })}
                 className="w-full p-2.5 text-xs rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white"
               />
             </div>
@@ -173,9 +204,7 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({ userProfile, onSaveProfi
                 type="number"
                 step="0.5"
                 value={formData.targetWeightKg}
-                onChange={(e) =>
-                  setFormData({ ...formData, targetWeightKg: parseFloat(e.target.value) || 68 })
-                }
+                onChange={(e) => setFormData({ ...formData, targetWeightKg: e.target.value })}
                 className="w-full p-2.5 text-xs rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white"
               />
             </div>
@@ -227,9 +256,7 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({ userProfile, onSaveProfi
                 <input
                   type="number"
                   value={formData.targetCalories}
-                  onChange={(e) =>
-                    setFormData({ ...formData, targetCalories: parseInt(e.target.value) || 1800 })
-                  }
+                  onChange={(e) => setFormData({ ...formData, targetCalories: e.target.value })}
                   className="w-full p-2 text-xs font-bold rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white"
                 />
               </div>
@@ -238,9 +265,7 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({ userProfile, onSaveProfi
                 <input
                   type="number"
                   value={formData.targetProteinG}
-                  onChange={(e) =>
-                    setFormData({ ...formData, targetProteinG: parseInt(e.target.value) || 140 })
-                  }
+                  onChange={(e) => setFormData({ ...formData, targetProteinG: e.target.value })}
                   className="w-full p-2 text-xs font-bold rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-blue-600 dark:text-blue-400"
                 />
               </div>
@@ -249,9 +274,7 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({ userProfile, onSaveProfi
                 <input
                   type="number"
                   value={formData.targetCarbsG}
-                  onChange={(e) =>
-                    setFormData({ ...formData, targetCarbsG: parseInt(e.target.value) || 180 })
-                  }
+                  onChange={(e) => setFormData({ ...formData, targetCarbsG: e.target.value })}
                   className="w-full p-2 text-xs font-bold rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-amber-600 dark:text-amber-400"
                 />
               </div>
@@ -260,9 +283,7 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({ userProfile, onSaveProfi
                 <input
                   type="number"
                   value={formData.targetFatG}
-                  onChange={(e) =>
-                    setFormData({ ...formData, targetFatG: parseInt(e.target.value) || 50 })
-                  }
+                  onChange={(e) => setFormData({ ...formData, targetFatG: e.target.value })}
                   className="w-full p-2 text-xs font-bold rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-purple-600 dark:text-purple-400"
                 />
               </div>
