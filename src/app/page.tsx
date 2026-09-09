@@ -37,6 +37,7 @@ import { CommunityTab } from '@/components/community/CommunityTab';
 import { RescueModal } from '@/components/rescue/RescueModal';
 import { PwaInstallPrompt } from '@/components/common/PwaInstallPrompt';
 import { DateNavigator } from '@/components/common/DateNavigator';
+import { DaySummaryCard } from '@/components/dashboard/DaySummaryCard';
 import { getTodayDateString } from '@/utils/dateUtils';
 import { Sparkles } from 'lucide-react';
 
@@ -281,8 +282,8 @@ export default function Home() {
     }
   };
 
-  const handleOpenLoggerForMeal = (type: MealType) => {
-    setLoggerTargetMeal(type);
+  const handleOpenLoggerForMeal = (type?: MealType) => {
+    setLoggerTargetMeal(type || 'lunch');
     setActiveTab('logger');
   };
 
@@ -304,16 +305,48 @@ export default function Home() {
   };
 
   const handleSaveAudit = (audit: DailyAudit) => {
+    const targetDate = audit.date || selectedDate;
+    const existingLog = allLogs[targetDate] || (targetDate === todayStr ? todayLog : {
+      date: targetDate,
+      waterConsumedMl: 0,
+      meals: [],
+    });
+
     const updated: DailyLog = {
-      ...todayLog,
+      ...existingLog,
       audit,
     };
-    setTodayLog(updated);
-    saveTodayLog(updated, currentUser.id);
 
-    const updatedAll = { ...allLogs, [todayLog.date]: updated };
+    const updatedAll = { ...allLogs, [targetDate]: updated };
     setAllLogs(updatedAll);
     saveAllDailyLogs(updatedAll, currentUser.id);
+
+    if (targetDate === todayStr) {
+      setTodayLog(updated);
+      saveTodayLog(updated, currentUser.id);
+    }
+  };
+
+  const handleRestartOnboarding = () => {
+    if (userProfile && currentUser) {
+      const resetProf: UserProfile = { ...userProfile, isOnboarded: false };
+      setUserProfile(resetProf);
+      saveUserProfile(resetProf, currentUser.id);
+    }
+  };
+
+  const handleResetMeals = () => {
+    if (currentUser) {
+      setAllLogs({});
+      const emptyToday: DailyLog = {
+        date: todayStr,
+        waterConsumedMl: 0,
+        meals: [],
+      };
+      setTodayLog(emptyToday);
+      saveTodayLog(emptyToday, currentUser.id);
+      saveAllDailyLogs({}, currentUser.id);
+    }
   };
 
   return (
@@ -338,6 +371,15 @@ export default function Home() {
               <DateNavigator
                 selectedDate={selectedDate}
                 onSelectDate={setSelectedDate}
+              />
+
+              {/* Day Total Summary Card (Today & Past Dates) */}
+              <DaySummaryCard
+                date={selectedDate}
+                dailyLog={activeLog}
+                profile={userProfile}
+                onOpenLogger={handleOpenLoggerForMeal}
+                onOpenAudit={() => setActiveTab('audit')}
               />
 
               <CalorieRing consumed={consumedTotals} profile={userProfile} />
@@ -449,7 +491,7 @@ export default function Home() {
 
           {activeTab === 'audit' && (
             <DailyAuditTab
-              dailyLog={todayLog}
+              dailyLog={activeLog}
               userProfile={userProfile}
               onSaveAudit={handleSaveAudit}
             />
@@ -459,6 +501,8 @@ export default function Home() {
             <ProfileTab
               userProfile={userProfile}
               onSaveProfile={handleSaveProfile}
+              onRestartOnboarding={handleRestartOnboarding}
+              onResetMeals={handleResetMeals}
             />
           )}
         </main>

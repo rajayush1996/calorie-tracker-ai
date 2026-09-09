@@ -43,7 +43,8 @@ export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({
   const journey = calculateWeightLossJourney(
     userProfile.currentWeightKg,
     userProfile.targetWeightKg,
-    userProfile.pace || 'recommended'
+    userProfile.pace || 'recommended',
+    userProfile.goal
   );
 
   // Prepare past 7 days calorie data for BarChart
@@ -92,21 +93,52 @@ export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({
     setTimeout(() => setIsSaved(false), 2000);
   };
 
-  const totalToLose = Math.max(0, userProfile.currentWeightKg - userProfile.targetWeightKg);
+  const weightDiff = Number((userProfile.targetWeightKg - userProfile.currentWeightKg).toFixed(1));
+  const isGain = weightDiff > 0;
+  const isMaintenance = userProfile.goal === 'maintenance' || Math.abs(weightDiff) < 0.2;
+
+  const journeyTitle =
+    userProfile.goal === 'muscle_gain'
+      ? 'Muscle Building Journey'
+      : userProfile.goal === 'weight_gain'
+      ? 'Weight Gain Journey'
+      : isMaintenance
+      ? 'Body Recomposition Journey'
+      : 'Weight Loss Journey';
+
+  const trajectoryTitle =
+    userProfile.goal === 'muscle_gain'
+      ? 'Muscle Growth Trajectory'
+      : userProfile.goal === 'weight_gain'
+      ? 'Bulking Trajectory'
+      : isMaintenance
+      ? 'Maintenance Trajectory'
+      : 'Weight Loss Trajectory';
+
+  const trajectorySub =
+    userProfile.goal === 'muscle_gain'
+      ? 'Projected muscle growth curve vs. your recorded check-ins'
+      : userProfile.goal === 'weight_gain'
+      ? 'Projected bulking curve vs. your recorded check-ins'
+      : isMaintenance
+      ? 'Stable weight curve vs. your recorded check-ins'
+      : 'Projected fat-loss curve vs. your recorded check-ins';
 
   return (
     <div className="space-y-4 pb-20">
-      {/* Journey & Projected Weight Loss Timeline */}
+      {/* Journey & Projected Weight Timeline */}
       <div className="bg-gradient-to-br from-emerald-500 to-teal-600 rounded-3xl p-5 text-white shadow-md shadow-emerald-500/15">
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-2">
             <Target className="w-5 h-5 text-emerald-200" />
             <span className="text-xs font-bold tracking-wider uppercase text-emerald-100">
-              Weight Loss Journey
+              {journeyTitle}
             </span>
           </div>
           <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-white/20 backdrop-blur-xs">
-            ~{journey.weeklyLossKg} kg / week pace
+            {isMaintenance
+              ? 'Maintenance Pace'
+              : `~${journey.weeklyRateKg || journey.weeklyLossKg} kg / week ${isGain ? 'gain' : 'loss'}`}
           </span>
         </div>
 
@@ -116,8 +148,12 @@ export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({
             <div className="text-lg font-black">{userProfile.currentWeightKg} kg</div>
           </div>
           <div className="bg-white/10 rounded-2xl p-2.5 backdrop-blur-xs">
-            <div className="text-[10px] text-emerald-100 uppercase">To Lose</div>
-            <div className="text-lg font-black text-amber-200">-{totalToLose} kg</div>
+            <div className="text-[10px] text-emerald-100 uppercase">
+              {isMaintenance ? 'Status' : isGain ? 'To Gain' : 'To Lose'}
+            </div>
+            <div className="text-lg font-black text-amber-200">
+              {isMaintenance ? 'Balanced' : isGain ? `+${weightDiff} kg` : `-${Math.abs(weightDiff)} kg`}
+            </div>
           </div>
           <div className="bg-white/10 rounded-2xl p-2.5 backdrop-blur-xs">
             <div className="text-[10px] text-emerald-100 uppercase">Target</div>
@@ -131,7 +167,7 @@ export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({
             <span>Estimated Goal Date:</span>
           </div>
           <span className="font-extrabold text-white text-sm">
-            {journey.estimatedTargetDate} (~{journey.weeksNeeded} weeks)
+            {journey.estimatedTargetDate} {journey.weeksNeeded > 0 ? `(~${journey.weeksNeeded} weeks)` : ''}
           </span>
         </div>
       </div>
@@ -142,10 +178,10 @@ export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({
           <div>
             <h3 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
               <TrendingUp className="w-4 h-4 text-emerald-500" />
-              Weight Loss Trajectory
+              {trajectoryTitle}
             </h3>
             <p className="text-[11px] text-slate-400">
-              Projected fat-loss curve vs. your recorded check-ins
+              {trajectorySub}
             </p>
           </div>
           <div className="flex items-center gap-3 text-[10px]">

@@ -1,4 +1,4 @@
-import { FoodItem, DietPlan, DailyLog, UserProfile, DailyAudit, DietType } from '@/types';
+import { FoodItem, DietPlan, DailyLog, UserProfile, DailyAudit, DietType, FitnessGoal } from '@/types';
 
 export async function parseMealSentence(
   sentence: string,
@@ -45,6 +45,7 @@ export async function generateDietPlan(params: {
   scheduleText: string;
   targetCalories: number;
   targetProteinG: number;
+  goal?: FitnessGoal;
   apiKey?: string;
   provider?: string;
 }): Promise<DietPlan & { provider?: string }> {
@@ -136,6 +137,43 @@ export async function getAIDamageControl(
   if (!res.ok) {
     const errorData = await res.json().catch(() => ({}));
     throw new Error(errorData.error || 'Failed to get damage control plan');
+  }
+
+  return res.json();
+}
+
+export async function verifyTargetsWithAI(params: {
+  age: number;
+  gender: string;
+  heightCm: number;
+  currentWeightKg: number;
+  targetWeightKg: number;
+  activityLevel: string;
+  goal: FitnessGoal;
+  dietType?: DietType;
+  pace?: string;
+  apiKey?: string;
+  provider?: string;
+}): Promise<{
+  targetCalories: number;
+  targetProteinG: number;
+  targetCarbsG: number;
+  targetFatG: number;
+  waterTargetMl: number;
+  aiExplanation: string;
+  weeklyRateKg: number;
+  confidence: string;
+  provider?: string;
+}> {
+  const res = await fetch('/api/ai/verify-targets', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(params),
+  });
+
+  if (!res.ok) {
+    const errorData = await res.json().catch(() => ({}));
+    throw new Error(errorData.error || 'Failed to verify targets with AI');
   }
 
   return res.json();

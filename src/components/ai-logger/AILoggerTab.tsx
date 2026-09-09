@@ -135,7 +135,7 @@ export const AILoggerTab: React.FC<AILoggerTabProps> = ({
           Log What You Ate in Plain English
         </h2>
         <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-          Type or dictate naturally. The AI will estimate portions, breakdown calories and macros, and allow interactive self-correction.
+          Type what you ate naturally. AI calculates exact calories and macros instantly.
         </p>
 
         {/* Date Selector for Past/Today Logging */}
@@ -212,7 +212,7 @@ export const AILoggerTab: React.FC<AILoggerTabProps> = ({
           <textarea
             value={inputSentence}
             onChange={(e) => setInputSentence(e.target.value)}
-            placeholder="What did you eat? (e.g. 2 rotis and dal, 1 cup chai, or chicken rice)..."
+            placeholder="What did you eat? Type your meal here..."
             rows={3}
             className="w-full p-3.5 text-sm rounded-2xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 resize-none transition-all"
           />

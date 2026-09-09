@@ -76,6 +76,7 @@ export const DietPlannerTab: React.FC<DietPlannerTabProps> = ({
         scheduleText,
         targetCalories: userProfile.targetCalories,
         targetProteinG: userProfile.targetProteinG,
+        goal: userProfile.goal,
         apiKey: userProfile.apiKey,
       });
 
@@ -134,7 +135,7 @@ export const DietPlannerTab: React.FC<DietPlannerTabProps> = ({
           Tailored to Your Kitchen & Schedule
         </h2>
         <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-          No unrealistic meal plans. Tell the AI what you already have in your pantry, your preferred eating times, and it will calculate exact fat-loss portions.
+          No unrealistic meal plans. Tell the AI what you already have in your kitchen, your preferred eating times, and it will calculate exact portions to hit your {userProfile.goal.replace('_', ' ')} targets.
         </p>
 
         {/* Diet Type Selector */}

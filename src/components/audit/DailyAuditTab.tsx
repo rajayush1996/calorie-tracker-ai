@@ -1,8 +1,9 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { DailyLog, UserProfile, DailyAudit } from '@/types';
 import { generateDailyAudit } from '@/services/aiService';
+import { formatDateDisplay, isToday, isYesterday } from '@/utils/dateUtils';
 import { Moon, Sparkles, CheckCircle2, AlertTriangle, ArrowRight, RefreshCw, Trophy } from 'lucide-react';
 
 interface DailyAuditTabProps {
@@ -18,6 +19,18 @@ export const DailyAuditTab: React.FC<DailyAuditTabProps> = ({
 }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [currentAudit, setCurrentAudit] = useState<DailyAudit | null>(dailyLog.audit || null);
+
+  // Sync state whenever selected date or log's audit changes
+  useEffect(() => {
+    setCurrentAudit(dailyLog.audit || null);
+  }, [dailyLog.date, dailyLog.audit]);
+
+  const isSelectedDateToday = isToday(dailyLog.date);
+  const dateLabel = isSelectedDateToday
+    ? 'Today'
+    : isYesterday(dailyLog.date)
+    ? 'Yesterday'
+    : formatDateDisplay(dailyLog.date);
 
   const totalCalories = (dailyLog.meals || []).reduce((sum, m) => sum + m.totalCalories, 0);
   const totalProtein = (dailyLog.meals || []).reduce((sum, m) => sum + m.totalProtein, 0);
@@ -45,18 +58,30 @@ export const DailyAuditTab: React.FC<DailyAuditTabProps> = ({
     <div className="space-y-4 pb-20">
       {/* Header card */}
       <div className="bg-white dark:bg-slate-900 rounded-3xl p-5 border border-slate-100 dark:border-slate-800 shadow-xs">
-        <div className="flex items-center gap-2 text-indigo-600 dark:text-indigo-400 font-bold text-sm mb-1">
-          <Moon className="w-4 h-4" />
-          <span>Daily AI Nutritional Audit</span>
+        <div className="flex items-center justify-between gap-2 mb-1">
+          <div className="flex items-center gap-2 text-indigo-600 dark:text-indigo-400 font-bold text-sm">
+            <Moon className="w-4 h-4" />
+            <span>Daily AI Nutritional Audit</span>
+          </div>
+          <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300">
+            {dateLabel}
+          </span>
         </div>
         <h2 className="text-xl font-black text-slate-900 dark:text-white tracking-tight">
-          End-of-Day Review & Mistake Analyzer
+          Review & Mistake Analyzer
         </h2>
         <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-          Once your day is complete, the AI analyzes everything you ate, identifies where you drifted, highlights your wins, and provides an actionable game plan for tomorrow.
+          The AI analyzes everything you logged on <strong>{dateLabel}</strong>, detects macro drift, celebrates wins, and provides an actionable game plan.
         </p>
 
-        {/* Quick today's intake summary */}
+        {currentAudit && (
+          <div className="flex items-center gap-1.5 text-[11px] font-bold text-emerald-600 dark:text-emerald-400 mt-3 bg-emerald-50 dark:bg-emerald-950/40 px-3 py-1.5 rounded-xl border border-emerald-200/50 dark:border-emerald-800/40">
+            <CheckCircle2 className="w-3.5 h-3.5 shrink-0" />
+            <span>AI Report Preserved for {dateLabel} • Score: {currentAudit.scoreOutOf10}/10</span>
+          </div>
+        )}
+
+        {/* Quick intake summary */}
         <div className="grid grid-cols-4 gap-2 my-3 text-center">
           <div className="bg-slate-50 dark:bg-slate-800/60 rounded-xl p-2">
             <div className="text-[10px] text-slate-400 uppercase font-semibold">Calories</div>
@@ -96,12 +121,12 @@ export const DailyAuditTab: React.FC<DailyAuditTabProps> = ({
           {isLoading ? (
             <>
               <RefreshCw className="w-4 h-4 animate-spin" />
-              Auditing Day's Nutrition...
+              Auditing {dateLabel}&apos;s Nutrition...
             </>
           ) : (
             <>
               <Sparkles className="w-4 h-4" />
-              {currentAudit ? 'Re-Analyze Day with AI' : 'Complete Day & Run AI Audit'}
+              {currentAudit ? `Re-Analyze ${dateLabel} with AI` : `Run AI Audit for ${dateLabel}`}
             </>
           )}
         </button>

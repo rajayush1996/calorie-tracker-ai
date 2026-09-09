@@ -1,15 +1,17 @@
 'use client';
 
 import React, { useState } from 'react';
-import { UserProfile, Gender, ActivityLevel, FitnessGoal, TransformationPace } from '@/types';
+import { UserProfile, Gender, ActivityLevel, FitnessGoal, TransformationPace, DietType } from '@/types';
 import {
   calculateTargets,
   calculateBMI,
   calculateWeightLossJourney,
   ACTIVITY_LABELS,
   PACE_CONFIG,
+  GOAL_PACES,
 } from '@/utils/nutritionCalculations';
-import { Sparkles, ArrowRight, ArrowLeft, Check, Target, Flame, Scale, Ruler } from 'lucide-react';
+import { verifyTargetsWithAI } from '@/services/aiService';
+import { Sparkles, ArrowRight, ArrowLeft, Check, Target, Flame, Scale, Ruler, RefreshCw } from 'lucide-react';
 
 interface OnboardingWizardProps {
   initialProfile: UserProfile;
@@ -37,10 +39,25 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = ({
   const [waistCm, setWaistCm] = useState<number | string>(initialProfile.waistCm ?? 86);
   const [chestCm, setChestCm] = useState<number | string>(initialProfile.chestCm ?? 98);
 
+  const [goal, setGoal] = useState<FitnessGoal>(initialProfile.goal || 'fat_loss');
+  const [dietType, setDietType] = useState<DietType>(initialProfile.dietType || 'veg');
   const [targetWeightKg, setTargetWeightKg] = useState<number | string>(
     initialProfile.targetWeightKg ?? 70
   );
   const [pace, setPace] = useState<TransformationPace>(initialProfile.pace || 'recommended');
+
+  const [isVerifyingAI, setIsVerifyingAI] = useState(false);
+  const [aiResult, setAiResult] = useState<{
+    targetCalories: number;
+    targetProteinG: number;
+    targetCarbsG: number;
+    targetFatG: number;
+    waterTargetMl: number;
+    aiExplanation: string;
+    weeklyRateKg: number;
+    confidence: string;
+    provider?: string;
+  } | null>(null);
 
   // Normalized numbers for calculations
   const numCurrentWeight = Number(currentWeightKg) || 75;
@@ -48,11 +65,27 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = ({
   const numHeight = Number(heightCm) || 170;
   const numAge = Number(age) || 24;
 
-  // Calculations
-  const isLoss = numTargetWeight < numCurrentWeight;
-  const goal: FitnessGoal = isLoss ? 'fat_loss' : numTargetWeight > numCurrentWeight ? 'muscle_gain' : 'maintenance';
+  const handleGoalSelect = (selectedGoal: FitnessGoal) => {
+    setGoal(selectedGoal);
+    setAiResult(null); // Reset calibrated AI targets if goal changes
+    if (selectedGoal === 'fat_loss') {
+      if (numTargetWeight >= numCurrentWeight) {
+        setTargetWeightKg(Math.max(30, Number((numCurrentWeight - 5).toFixed(1))));
+      }
+    } else if (selectedGoal === 'muscle_gain') {
+      if (numTargetWeight <= numCurrentWeight) {
+        setTargetWeightKg(Number((numCurrentWeight + 4).toFixed(1)));
+      }
+    } else if (selectedGoal === 'weight_gain') {
+      if (numTargetWeight <= numCurrentWeight) {
+        setTargetWeightKg(Number((numCurrentWeight + 6).toFixed(1)));
+      }
+    } else if (selectedGoal === 'maintenance') {
+      setTargetWeightKg(numCurrentWeight);
+    }
+  };
 
-  const targets = calculateTargets(
+  const calculatedTargets = calculateTargets(
     numCurrentWeight,
     numHeight,
     numAge,
@@ -62,9 +95,44 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = ({
     pace
   );
 
+  const activeTargets = aiResult
+    ? {
+        targetCalories: aiResult.targetCalories,
+        targetProteinG: aiResult.targetProteinG,
+        targetCarbsG: aiResult.targetCarbsG,
+        targetFatG: aiResult.targetFatG,
+        waterTargetMl: aiResult.waterTargetMl,
+        tdee: calculatedTargets.tdee,
+      }
+    : calculatedTargets;
+
+  const handleVerifyWithAI = async () => {
+    setIsVerifyingAI(true);
+    try {
+      const res = await verifyTargetsWithAI({
+        age: numAge,
+        gender,
+        heightCm: numHeight,
+        currentWeightKg: numCurrentWeight,
+        targetWeightKg: numTargetWeight,
+        activityLevel,
+        goal,
+        dietType,
+        pace,
+        apiKey: initialProfile.apiKey,
+        provider: initialProfile.aiProvider,
+      });
+      setAiResult(res);
+    } catch (err) {
+      console.warn('AI target verification error in onboarding:', err);
+    } finally {
+      setIsVerifyingAI(false);
+    }
+  };
+
   const bmi = calculateBMI(numCurrentWeight, numHeight);
   const targetBmi = calculateBMI(numTargetWeight, numHeight);
-  const journey = calculateWeightLossJourney(numCurrentWeight, numTargetWeight, pace);
+  const journey = calculateWeightLossJourney(numCurrentWeight, numTargetWeight, pace, goal);
 
   const handleFinish = () => {
     const finalProfile: UserProfile = {
@@ -79,12 +147,13 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = ({
       chestCm: chestCm === '' ? undefined : Number(chestCm),
       activityLevel,
       goal,
+      dietType,
       pace,
-      targetCalories: targets.targetCalories,
-      targetProteinG: targets.targetProteinG,
-      targetCarbsG: targets.targetCarbsG,
-      targetFatG: targets.targetFatG,
-      waterTargetMl: targets.waterTargetMl,
+      targetCalories: activeTargets.targetCalories,
+      targetProteinG: activeTargets.targetProteinG,
+      targetCarbsG: activeTargets.targetCarbsG,
+      targetFatG: activeTargets.targetFatG,
+      waterTargetMl: activeTargets.waterTargetMl,
       targetDate: journey.estimatedTargetDate,
       isOnboarded: true,
     };
@@ -186,6 +255,38 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = ({
                     </option>
                   ))}
                 </select>
+              </div>
+
+              <div>
+                <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block mb-1.5">
+                  Dietary Preference
+                </label>
+                <div className="grid grid-cols-3 gap-2">
+                  {[
+                    { id: 'veg' as DietType, label: '🌱 Veg' },
+                    { id: 'non_veg' as DietType, label: '🍗 Non-Veg' },
+                    { id: 'eggetarian' as DietType, label: '🥚 Eggetarian' },
+                    { id: 'vegan' as DietType, label: '🥗 Vegan' },
+                    { id: 'jain' as DietType, label: '🌿 Jain' },
+                    { id: 'keto' as DietType, label: '🥑 Keto' },
+                  ].map((d) => (
+                    <button
+                      key={d.id}
+                      type="button"
+                      onClick={() => {
+                        setDietType(d.id);
+                        setAiResult(null);
+                      }}
+                      className={`py-2 px-2 text-xs font-bold rounded-xl border text-center transition-all ${
+                        dietType === d.id
+                          ? 'bg-emerald-50 dark:bg-emerald-950/60 border-emerald-500 text-emerald-700 dark:text-emerald-300 shadow-xs ring-1 ring-emerald-500/20'
+                          : 'bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:border-slate-300'
+                      }`}
+                    >
+                      {d.label}
+                    </button>
+                  ))}
+                </div>
               </div>
             </div>
 
@@ -314,19 +415,59 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = ({
           <div className="space-y-4">
             <div>
               <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
-                Phase 3 • Goal & Speed
+                Phase 3 • Goal & Strategy
               </span>
               <h2 className="text-xl font-black text-slate-900 dark:text-white tracking-tight">
-                Transformation Speed
+                Select Your Agenda & Pace
               </h2>
               <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-                Choose how fast you want to reach your target weight.
+                Whether cutting fat, building muscle, or bulking, we calibrate your exact energy surplus or deficit.
               </p>
             </div>
 
+            {/* Goal Selector (4 Clear Agenda Cards) */}
+            <div>
+              <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block mb-2">
+                1. What is your primary objective?
+              </label>
+              <div className="grid grid-cols-2 gap-2">
+                {[
+                  { id: 'fat_loss' as FitnessGoal, label: 'Fat Loss', sub: 'Burn fat & get lean', icon: '🔥' },
+                  { id: 'muscle_gain' as FitnessGoal, label: 'Muscle Growth', sub: 'Hypertrophy & clean bulk', icon: '💪' },
+                  { id: 'weight_gain' as FitnessGoal, label: 'Weight Gain', sub: 'Healthy mass & bulking', icon: '📈' },
+                  { id: 'maintenance' as FitnessGoal, label: 'Maintenance', sub: 'TDEE balance & tone', icon: '⚖️' },
+                ].map((g) => {
+                  const isSelected = goal === g.id;
+                  return (
+                    <button
+                      type="button"
+                      key={g.id}
+                      onClick={() => handleGoalSelect(g.id)}
+                      className={`p-2.5 rounded-2xl border text-left transition-all ${
+                        isSelected
+                          ? 'bg-emerald-50/90 dark:bg-emerald-950/40 border-emerald-500 ring-2 ring-emerald-500/20 shadow-xs'
+                          : 'bg-slate-50 dark:bg-slate-800/40 border-slate-200/80 dark:border-slate-800 hover:border-slate-300'
+                      }`}
+                    >
+                      <div className="flex items-center gap-2">
+                        <span className="text-base">{g.icon}</span>
+                        <div className="font-bold text-xs text-slate-900 dark:text-white">
+                          {g.label}
+                        </div>
+                      </div>
+                      <div className="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5 leading-tight">
+                        {g.sub}
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Target Weight Input */}
             <div>
               <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block mb-1">
-                Target Weight (kg)
+                2. Target Weight (kg)
               </label>
               <div className="flex items-center gap-3">
                 <input
@@ -337,9 +478,11 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = ({
                   className="flex-1 p-3 text-base font-bold rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white"
                 />
                 <span className="text-xs font-bold px-3 py-2 rounded-xl bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300">
-                  {numCurrentWeight > numTargetWeight
-                    ? `-${(numCurrentWeight - numTargetWeight).toFixed(1)} kg`
-                    : `+${(numTargetWeight - numCurrentWeight).toFixed(1)} kg`}
+                  {numTargetWeight > numCurrentWeight
+                    ? `+${(numTargetWeight - numCurrentWeight).toFixed(1)} kg ${goal === 'muscle_gain' ? 'Muscle' : 'Weight'}`
+                    : numTargetWeight < numCurrentWeight
+                    ? `-${(numCurrentWeight - numTargetWeight).toFixed(1)} kg Fat Loss`
+                    : 'Maintain Weight'}
                 </span>
               </div>
             </div>
@@ -347,50 +490,56 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = ({
             {/* Pace Options */}
             <div className="space-y-2">
               <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block">
-                Select Transformation Pace:
+                3. Choose Transformation Pace:
               </label>
 
-              {(['sustainable', 'recommended', 'aggressive'] as TransformationPace[]).map(
-                (pKey) => {
-                  const pConf = PACE_CONFIG[pKey];
-                  const isSelected = pace === pKey;
+              {(['sustainable', 'recommended', 'aggressive'] as const).map((pKey) => {
+                const pConf = GOAL_PACES[goal][pKey];
+                const isSelected = pace === pKey;
 
-                  return (
-                    <div
-                      key={pKey}
-                      onClick={() => setPace(pKey)}
-                      className={`p-3 rounded-2xl border cursor-pointer transition-all ${
-                        isSelected
-                          ? 'bg-emerald-50/80 dark:bg-emerald-950/40 border-emerald-500 shadow-xs'
-                          : 'bg-slate-50 dark:bg-slate-800/40 border-slate-200/80 dark:border-slate-800 hover:border-slate-300'
-                      }`}
-                    >
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <span className="text-lg">{pConf.icon}</span>
-                          <div>
-                            <div className="text-xs font-bold text-slate-900 dark:text-white">
-                              {pConf.label}
-                            </div>
-                            <div className="text-[11px] text-slate-500 dark:text-slate-400">
-                              {pConf.description}
-                            </div>
+                return (
+                  <div
+                    key={pKey}
+                    onClick={() => setPace(pKey)}
+                    className={`p-3 rounded-2xl border cursor-pointer transition-all ${
+                      isSelected
+                        ? 'bg-emerald-50/80 dark:bg-emerald-950/40 border-emerald-500 shadow-xs ring-1 ring-emerald-500/20'
+                        : 'bg-slate-50 dark:bg-slate-800/40 border-slate-200/80 dark:border-slate-800 hover:border-slate-300'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <span className="text-lg">{pConf.icon}</span>
+                        <div>
+                          <div className="text-xs font-bold text-slate-900 dark:text-white">
+                            {pConf.label}
+                          </div>
+                          <div className="text-[11px] text-slate-500 dark:text-slate-400">
+                            {pConf.description}
                           </div>
                         </div>
+                      </div>
 
-                        <div className="text-right">
-                          <span className="text-xs font-extrabold text-emerald-600 dark:text-emerald-400">
-                            ~{pConf.estimatedWeeklyKg} kg/wk
-                          </span>
-                          <span className="text-[10px] text-slate-400 block">
-                            {pConf.calorieDelta > 0 ? `+${pConf.calorieDelta}` : pConf.calorieDelta} kcal/day
-                          </span>
-                        </div>
+                      <div className="text-right">
+                        <span className="text-xs font-extrabold text-emerald-600 dark:text-emerald-400">
+                          {goal === 'maintenance'
+                            ? 'Stable'
+                            : pConf.calorieDelta > 0
+                            ? `+${pConf.estimatedWeeklyKg} kg/wk`
+                            : `~${pConf.estimatedWeeklyKg} kg/wk`}
+                        </span>
+                        <span className="text-[10px] text-slate-400 block">
+                          {pConf.calorieDelta > 0
+                            ? `+${pConf.calorieDelta} kcal surplus`
+                            : pConf.calorieDelta < 0
+                            ? `${pConf.calorieDelta} kcal deficit`
+                            : 'TDEE Match'}
+                        </span>
                       </div>
                     </div>
-                  );
-                }
-              )}
+                  </div>
+                );
+              })}
             </div>
 
             <div className="flex gap-2 pt-2">
@@ -421,10 +570,16 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = ({
                 Phase 4 • Blueprint Ready
               </span>
               <h2 className="text-xl font-black text-slate-900 dark:text-white tracking-tight">
-                Your AI Transformation Plan
+                {goal === 'muscle_gain'
+                  ? '💪 Muscle Growth Blueprint'
+                  : goal === 'weight_gain'
+                  ? '📈 Mass Bulking Blueprint'
+                  : goal === 'fat_loss'
+                  ? '🔥 Fat Loss Transformation Plan'
+                  : '⚖️ Body Recomposition Blueprint'}
               </h2>
               <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-                Here are your personalized calorie and macro targets calibrated for your goal.
+                Calibrated energy and macros specifically tuned for your {goal.replace('_', ' ')} goal.
               </p>
             </div>
 
@@ -433,15 +588,15 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = ({
               <div className="flex items-center justify-between">
                 <div>
                   <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-200">
-                    Daily Calorie Target
+                    Daily Calorie Target {activeTargets.targetCalories > activeTargets.tdee ? `(+${activeTargets.targetCalories - activeTargets.tdee} Surplus)` : activeTargets.targetCalories < activeTargets.tdee ? `(-${activeTargets.tdee - activeTargets.targetCalories} Deficit)` : '(Maintenance)'}
                   </span>
-                  <div className="text-3xl font-black">{targets.targetCalories} kcal</div>
+                  <div className="text-3xl font-black">{activeTargets.targetCalories} kcal</div>
                 </div>
                 <div className="text-right">
                   <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-200">
                     Maintenance (TDEE)
                   </span>
-                  <div className="text-sm font-extrabold">{targets.tdee} kcal</div>
+                  <div className="text-sm font-extrabold">{activeTargets.tdee} kcal</div>
                 </div>
               </div>
 
@@ -449,17 +604,52 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = ({
               <div className="grid grid-cols-3 gap-2 pt-2 border-t border-white/20 text-center">
                 <div className="bg-white/15 rounded-xl p-2">
                   <div className="text-[10px] text-emerald-100">Protein</div>
-                  <div className="text-sm font-bold">{targets.targetProteinG}g</div>
+                  <div className="text-sm font-bold">{activeTargets.targetProteinG}g</div>
                 </div>
                 <div className="bg-white/15 rounded-xl p-2">
                   <div className="text-[10px] text-emerald-100">Carbs</div>
-                  <div className="text-sm font-bold">{targets.targetCarbsG}g</div>
+                  <div className="text-sm font-bold">{activeTargets.targetCarbsG}g</div>
                 </div>
                 <div className="bg-white/15 rounded-xl p-2">
                   <div className="text-[10px] text-emerald-100">Fats</div>
-                  <div className="text-sm font-bold">{targets.targetFatG}g</div>
+                  <div className="text-sm font-bold">{activeTargets.targetFatG}g</div>
                 </div>
               </div>
+            </div>
+
+            {/* AI Calibration Card */}
+            <div className="p-3.5 rounded-2xl bg-indigo-50/90 dark:bg-indigo-950/40 border border-indigo-200/70 dark:border-indigo-800/50 space-y-2">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-1.5">
+                  <Sparkles className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
+                  <span className="text-xs font-black text-indigo-950 dark:text-indigo-200">
+                    AI Metabolic Calibration
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  disabled={isVerifyingAI}
+                  onClick={handleVerifyWithAI}
+                  className="px-2.5 py-1 text-[11px] font-bold rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white flex items-center gap-1 transition-all disabled:opacity-50"
+                >
+                  <RefreshCw className={`w-3 h-3 ${isVerifyingAI ? 'animate-spin' : ''}`} />
+                  <span>{isVerifyingAI ? 'Analyzing...' : aiResult ? 'Recalibrate' : 'Verify with AI'}</span>
+                </button>
+              </div>
+
+              {aiResult ? (
+                <div className="text-[11px] text-indigo-900/90 dark:text-indigo-300 space-y-1">
+                  <p className="font-medium leading-relaxed">{aiResult.aiExplanation}</p>
+                  <div className="flex items-center gap-2 pt-1 font-bold text-[10px] text-emerald-600 dark:text-emerald-400">
+                    <span>✓ Targets calibrated for {dietType.toUpperCase()} + {goal.replace('_', ' ').toUpperCase()}</span>
+                    {aiResult.provider && <span className="text-slate-400">• via {aiResult.provider}</span>}
+                  </div>
+                </div>
+              ) : (
+                <p className="text-[11px] text-indigo-900/80 dark:text-indigo-300/80 leading-snug">
+                  Click to calibrate your protein and calories with AI for your <strong>{dietType.toUpperCase()}</strong> diet & <strong>{goal.replace('_', ' ')}</strong> goal.
+                </p>
+              )}
             </div>
 
             {/* Journey Milestone Banner */}
@@ -468,10 +658,10 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = ({
                 <Target className="w-5 h-5 text-emerald-600 dark:text-emerald-400 shrink-0" />
                 <div>
                   <span className="text-slate-500 dark:text-slate-400 block text-[11px]">
-                    Projected Goal Achievement:
+                    Projected Goal Date:
                   </span>
                   <strong className="text-emerald-900 dark:text-emerald-200 font-black">
-                    {journey.estimatedTargetDate} (~{journey.weeksNeeded} weeks)
+                    {journey.estimatedTargetDate} {journey.weeksNeeded > 0 ? `(~${journey.weeksNeeded} weeks)` : ''}
                   </strong>
                 </div>
               </div>

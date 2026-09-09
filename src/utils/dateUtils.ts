@@ -1,4 +1,4 @@
-﻿export function getTodayDateString(): string {
+export function getTodayDateString(): string {
   const d = new Date();
   const year = d.getFullYear();
   const month = String(d.getMonth() + 1).padStart(2, '0');
@@ -54,3 +54,19 @@ export function formatDisplayDate(dateStr: string): { label: string; subLabel: s
 
   return { label, subLabel, isToday, isYesterday };
 }
+
+export function isToday(dateStr: string): boolean {
+  return dateStr === getTodayDateString();
+}
+
+export function isYesterday(dateStr: string): boolean {
+  return dateStr === getYesterdayDateString();
+}
+
+export function formatDateDisplay(dateStr: string): string {
+  const { label, subLabel, isToday: it, isYesterday: iy } = formatDisplayDate(dateStr);
+  if (it) return 'Today';
+  if (iy) return 'Yesterday';
+  return `${label}, ${subLabel}`;
+}
+

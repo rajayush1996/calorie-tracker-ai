@@ -58,4 +58,35 @@ describe('Nutrition & Metabolic Calculation Engine', () => {
     assert.strictEqual(journey.weeksNeeded, 10);
     assert.strictEqual(journey.projectionPoints.length, 11);
   });
+
+  it('should generate muscle building targets with surplus calories and optimal protein', () => {
+    // 70kg male, moderate activity, muscle gain recommended (+350 kcal)
+    const result = calculateTargets(70, 175, 25, 'male', 'moderate', 'muscle_gain', 'recommended');
+    assert.strictEqual(result.targetCalories - result.tdee, 350, 'Surplus should be exactly +350 kcal');
+    // Protein target: 70 * 2.1 = 147g
+    assert.strictEqual(result.targetProteinG, 147);
+    assert.ok(result.targetCarbsG > 200, 'Carbs should be high to fuel intense lifting');
+  });
+
+  it('should generate healthy weight gain targets with surplus and balanced macros', () => {
+    // 55kg skinny individual wanting healthy weight gain (+500 kcal)
+    const result = calculateTargets(55, 170, 22, 'male', 'light', 'weight_gain', 'recommended');
+    assert.strictEqual(result.targetCalories - result.tdee, 500, 'Surplus should be exactly +500 kcal');
+    assert.ok(result.targetCalories > result.tdee);
+    assert.strictEqual(result.targetProteinG, Math.round(55 * 1.8));
+  });
+
+  it('should generate exact maintenance targets matching TDEE', () => {
+    const result = calculateTargets(75, 180, 30, 'male', 'moderate', 'maintenance', 'recommended');
+    assert.strictEqual(result.targetCalories, result.tdee, 'Maintenance calories should equal TDEE');
+  });
+
+  it('should calculate upward weight gain trajectory accurately', () => {
+    // 60kg aiming for 67kg (+7kg gain) with muscle_gain (0.35kg/wk) -> 7 / 0.35 = 20 weeks
+    const journey = calculateWeightLossJourney(60, 67, 'recommended', 'muscle_gain');
+    assert.strictEqual(journey.weeksNeeded, 20);
+    assert.strictEqual(journey.projectionPoints[0].projectedWeight, 60);
+    const lastPoint = journey.projectionPoints[journey.projectionPoints.length - 1];
+    assert.ok(lastPoint.projectedWeight > 60, 'Projected weight should increase over time');
+  });
 });

@@ -29,6 +29,7 @@ export async function POST(req: NextRequest) {
       try {
         const systemPrompt = `You are an elite, compassionate AI Nutrition Coach.
 Analyze the user's completed day of eating.
+Goal: ${userProfile.goal || 'fat_loss'}
 Target: ${userProfile.targetCalories} kcal, ${userProfile.targetProteinG}g Protein, ${userProfile.targetCarbsG}g Carbs, ${userProfile.targetFatG}g Fat.
 Actual Consumed: ${totalCalories} kcal, ${totalProtein}g Protein, ${totalCarbs}g Carbs, ${totalFat}g Fat.
 Water Consumed: ${dailyLog.waterConsumedMl || 0}ml (Goal: ${userProfile.waterTargetMl}ml).
@@ -110,15 +111,27 @@ function generateHeuristicAudit(
   let score = 8.5;
 
   // Calorie analysis
+  const isSurplusGoal = userProfile.goal === 'muscle_gain' || userProfile.goal === 'weight_gain';
+
   if (Math.abs(calDiff) <= 150) {
     wins.push(`Exceptional calorie control! Finished within ±${Math.abs(calDiff)} kcal of your ${userProfile.targetCalories} kcal budget.`);
   } else if (calDiff > 350) {
-    mistakes.push(`Under-ate by ${calDiff} kcal. While in a fat-loss phase, an excessive deficit slows metabolism and triggers muscle breakdown.`);
-    actionPlan.push(`Ensure you eat your planned dinner and snacks to hit at least ${userProfile.targetCalories - 200} kcal.`);
+    if (isSurplusGoal) {
+      mistakes.push(`Under-ate by ${calDiff} kcal. In a muscle building/weight gain phase, falling short of your calorie surplus stalls muscle hypertrophy and mass gain.`);
+      actionPlan.push(`Ensure you hit your surplus target tomorrow by adding a nutrient-dense snack (nuts, peanut butter, or a milk shake).`);
+    } else {
+      mistakes.push(`Under-ate by ${calDiff} kcal. While in a fat-loss phase, an excessive deficit slows metabolism and triggers muscle breakdown.`);
+      actionPlan.push(`Ensure you eat your planned dinner and snacks to hit at least ${userProfile.targetCalories - 200} kcal.`);
+    }
     score -= 1.0;
   } else if (calDiff < -200) {
-    mistakes.push(`Exceeded your calorie limit by ${Math.abs(calDiff)} kcal, reducing your daily fat-loss deficit.`);
-    actionPlan.push('Trim extra cooking oil or sugary drinks from your dinner tomorrow to stay within budget.');
+    if (isSurplusGoal) {
+      mistakes.push(`Exceeded your surplus target by ${Math.abs(calDiff)} kcal. Keeping surplus controlled ensures lean muscle gains rather than unwanted body fat.`);
+      actionPlan.push('Stay within your target surplus range to prioritize lean muscle development.');
+    } else {
+      mistakes.push(`Exceeded your calorie limit by ${Math.abs(calDiff)} kcal, reducing your daily fat-loss deficit.`);
+      actionPlan.push('Trim extra cooking oil or sugary drinks from your dinner tomorrow to stay within budget.');
+    }
     score -= 1.5;
   }
 

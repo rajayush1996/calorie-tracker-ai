@@ -1,6 +1,6 @@
 export type Gender = 'male' | 'female' | 'other';
 export type ActivityLevel = 'sedentary' | 'light' | 'moderate' | 'active' | 'very_active';
-export type FitnessGoal = 'fat_loss' | 'maintenance' | 'muscle_gain';
+export type FitnessGoal = 'fat_loss' | 'muscle_gain' | 'weight_gain' | 'maintenance';
 export type TransformationPace = 'sustainable' | 'recommended' | 'aggressive' | 'muscle_gain';
 export type DietType = 'veg' | 'non_veg' | 'eggetarian' | 'vegan' | 'jain' | 'keto';
 export type MealType = 'breakfast' | 'lunch' | 'dinner' | 'snack';
@@ -25,6 +25,7 @@ export interface UserProfile {
   hipsCm?: number;
   activityLevel: ActivityLevel;
   goal: FitnessGoal;
+  dietType?: DietType;
   pace: TransformationPace;
   targetCalories: number;
   targetProteinG: number;

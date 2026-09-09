@@ -16,39 +16,131 @@ export const ACTIVITY_LABELS: Record<ActivityLevel, string> = {
   very_active: 'Extremely Active (Athletic/Physical job)',
 };
 
+export interface GoalPaceOption {
+  label: string;
+  description: string;
+  calorieDelta: number;
+  estimatedWeeklyKg: number;
+  icon: string;
+}
+
+export const GOAL_PACES: Record<
+  FitnessGoal,
+  Record<'sustainable' | 'recommended' | 'aggressive', GoalPaceOption>
+> = {
+  fat_loss: {
+    sustainable: {
+      label: 'Slow & Sustainable Fat Loss',
+      description: 'Easiest to follow, preserves maximum muscle & energy',
+      calorieDelta: -250,
+      estimatedWeeklyKg: 0.28,
+      icon: '🐢',
+    },
+    recommended: {
+      label: 'Standard Fat Loss (Recommended)',
+      description: 'The golden balance of steady fat burn and satiety',
+      calorieDelta: -500,
+      estimatedWeeklyKg: 0.50,
+      icon: '⚖️',
+    },
+    aggressive: {
+      label: 'Fast / Aggressive Cut',
+      description: 'Deep deficit for rapid fat drop or event jumpstart',
+      calorieDelta: -750,
+      estimatedWeeklyKg: 0.82,
+      icon: '⚡',
+    },
+  },
+  muscle_gain: {
+    sustainable: {
+      label: 'Lean Hypertrophy',
+      description: 'Slight surplus: build lean muscle with minimal fat gain',
+      calorieDelta: 200,
+      estimatedWeeklyKg: 0.20,
+      icon: '🌱',
+    },
+    recommended: {
+      label: 'Optimal Muscle Growth (Recommended)',
+      description: 'The sweet spot for building muscle size and strength',
+      calorieDelta: 350,
+      estimatedWeeklyKg: 0.35,
+      icon: '💪',
+    },
+    aggressive: {
+      label: 'Power Bulk',
+      description: 'Higher surplus for serious strength & heavy lifting',
+      calorieDelta: 500,
+      estimatedWeeklyKg: 0.50,
+      icon: '🏋️',
+    },
+  },
+  weight_gain: {
+    sustainable: {
+      label: 'Steady Weight Gain',
+      description: 'Gradual, easy digestion and sustainable weight increase',
+      calorieDelta: 300,
+      estimatedWeeklyKg: 0.30,
+      icon: '📈',
+    },
+    recommended: {
+      label: 'Healthy Weight Bulking (Recommended)',
+      description: 'Solid surplus for underweight recovery & mass building',
+      calorieDelta: 500,
+      estimatedWeeklyKg: 0.50,
+      icon: '🚀',
+    },
+    aggressive: {
+      label: 'Accelerated Mass Gain',
+      description: 'Maximum calorie surplus for hardgainers & high metabolisms',
+      calorieDelta: 750,
+      estimatedWeeklyKg: 0.75,
+      icon: '🔥',
+    },
+  },
+  maintenance: {
+    sustainable: {
+      label: 'Body Recomposition',
+      description: 'Maintain exact weight while toning physique & fitness',
+      calorieDelta: 0,
+      estimatedWeeklyKg: 0.0,
+      icon: '⚖️',
+    },
+    recommended: {
+      label: 'True Maintenance (Recommended)',
+      description: 'Match TDEE exactly for energy balance and vitality',
+      calorieDelta: 0,
+      estimatedWeeklyKg: 0.0,
+      icon: '🎯',
+    },
+    aggressive: {
+      label: 'Performance Maintenance',
+      description: 'High activity maintenance for athletic performance',
+      calorieDelta: 0,
+      estimatedWeeklyKg: 0.0,
+      icon: '⚡',
+    },
+  },
+};
+
 export const PACE_CONFIG: Record<
   TransformationPace,
   { label: string; description: string; calorieDelta: number; estimatedWeeklyKg: number; icon: string }
 > = {
-  sustainable: {
-    label: 'Slow & Sustainable',
-    description: 'Easiest to follow, preserves maximum muscle & energy',
-    calorieDelta: -250,
-    estimatedWeeklyKg: 0.28,
-    icon: '🐢',
-  },
-  recommended: {
-    label: 'Standard Fat Loss (Recommended)',
-    description: 'The golden balance of steady fat loss and satiety',
-    calorieDelta: -500,
-    estimatedWeeklyKg: 0.50,
-    icon: '⚖️',
-  },
-  aggressive: {
-    label: 'Fast / Extreme Cut',
-    description: 'Aggressive deficit for fast event prep or jumpstart',
-    calorieDelta: -750,
-    estimatedWeeklyKg: 0.82,
-    icon: '⚡',
-  },
-  muscle_gain: {
-    label: 'Lean Bulk / Muscle Building',
-    description: 'Calorie surplus designed for muscle growth',
-    calorieDelta: 350,
-    estimatedWeeklyKg: -0.30, // weight increase
-    icon: '💪',
-  },
+  sustainable: GOAL_PACES.fat_loss.sustainable,
+  recommended: GOAL_PACES.fat_loss.recommended,
+  aggressive: GOAL_PACES.fat_loss.aggressive,
+  muscle_gain: GOAL_PACES.muscle_gain.recommended,
 };
+
+export function getPaceConfig(
+  goal: FitnessGoal = 'fat_loss',
+  pace: TransformationPace = 'recommended'
+): GoalPaceOption {
+  const goalGroup = GOAL_PACES[goal] || GOAL_PACES.fat_loss;
+  const normalizedPace =
+    pace === 'muscle_gain' ? 'recommended' : (pace as 'sustainable' | 'recommended' | 'aggressive');
+  return goalGroup[normalizedPace] || goalGroup.recommended;
+}
 
 /**
  * Calculate BMR using the Mifflin-St Jeor Equation
@@ -77,7 +169,7 @@ export function calculateTDEE(bmr: number, activityLevel: ActivityLevel): number
 }
 
 /**
- * Calculate recommended targets for calories and macros based on pace
+ * Calculate recommended targets for calories and macros based on goal and pace
  */
 export function calculateTargets(
   weightKg: number,
@@ -85,13 +177,13 @@ export function calculateTargets(
   age: number,
   gender: Gender,
   activityLevel: ActivityLevel,
-  goal: FitnessGoal,
+  goal: FitnessGoal = 'fat_loss',
   pace: TransformationPace = 'recommended'
 ) {
   const bmr = calculateBMR(weightKg, heightCm, age, gender);
   const tdee = calculateTDEE(bmr, activityLevel);
 
-  const paceInfo = PACE_CONFIG[pace] || PACE_CONFIG.recommended;
+  const paceInfo = getPaceConfig(goal, pace);
   const minSafeFloor = gender === 'female' ? 1200 : 1500;
 
   let targetCalories = tdee + paceInfo.calorieDelta;
@@ -99,13 +191,34 @@ export function calculateTargets(
     targetCalories = Math.max(minSafeFloor, targetCalories);
   }
 
-  // High protein for muscle retention during fat loss
-  const proteinMultiplier = pace === 'aggressive' ? 2.2 : 2.0;
+  // Protein and fat ratios tailored by fitness goal:
+  // - Fat loss: High protein (2.0 - 2.2g/kg) to preserve lean muscle during deficit
+  // - Muscle gain: High protein (2.0 - 2.2g/kg) for hypertrophy + carbs for training intensity
+  // - Weight gain: Balanced protein (1.8g/kg) + higher healthy fats (28%) for calorie density
+  // - Maintenance: 1.8g/kg protein for overall wellness
+  let proteinMultiplier = 2.0;
+  let fatCalorieRatio = 0.25;
+
+  if (goal === 'fat_loss') {
+    proteinMultiplier = pace === 'aggressive' ? 2.2 : 2.0;
+    fatCalorieRatio = 0.25;
+  } else if (goal === 'muscle_gain') {
+    proteinMultiplier = pace === 'aggressive' ? 2.2 : 2.1;
+    fatCalorieRatio = 0.25;
+  } else if (goal === 'weight_gain') {
+    proteinMultiplier = 1.8;
+    fatCalorieRatio = 0.28;
+  } else {
+    // maintenance
+    proteinMultiplier = 1.8;
+    fatCalorieRatio = 0.25;
+  }
+
   const targetProteinG = Math.round(weightKg * proteinMultiplier);
   const proteinCalories = targetProteinG * 4;
 
-  // Fat: 25% of total calories
-  const fatCalories = Math.round(targetCalories * 0.25);
+  // Fat calories
+  const fatCalories = Math.round(targetCalories * fatCalorieRatio);
   const targetFatG = Math.round(fatCalories / 9);
 
   // Carbs: Remaining calories
@@ -152,24 +265,35 @@ export function calculateBMI(weightKg: number, heightCm: number) {
 }
 
 /**
- * Calculate weight loss journey milestones and week-by-week projection based on selected pace
+ * Calculate weight journey milestones and week-by-week projection based on goal and pace
  */
 export function calculateWeightLossJourney(
   currentWeightKg: number,
   targetWeightKg: number,
-  pace: TransformationPace = 'recommended'
+  pace: TransformationPace = 'recommended',
+  goal?: FitnessGoal
 ) {
-  const paceInfo = PACE_CONFIG[pace] || PACE_CONFIG.recommended;
   const isLoss = targetWeightKg < currentWeightKg;
+  const effectiveGoal: FitnessGoal =
+    goal || (targetWeightKg > currentWeightKg ? 'weight_gain' : isLoss ? 'fat_loss' : 'maintenance');
+
+  const paceInfo = getPaceConfig(effectiveGoal, pace);
   const totalWeightDiffKg = Math.abs(currentWeightKg - targetWeightKg);
 
-  const weeklyRate = Math.abs(paceInfo.estimatedWeeklyKg);
+  const weeklyRate = Math.abs(paceInfo.estimatedWeeklyKg) || (effectiveGoal === 'maintenance' ? 0 : 0.4);
 
   if (totalWeightDiffKg <= 0.2 || weeklyRate <= 0) {
     return {
       weeksNeeded: 0,
       weeklyLossKg: 0,
-      projectionPoints: [],
+      weeklyRateKg: 0,
+      projectionPoints: [
+        {
+          week: 0,
+          date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+          projectedWeight: Number(currentWeightKg.toFixed(1)),
+        },
+      ],
       estimatedTargetDate: new Date().toLocaleDateString('en-US', {
         month: 'short',
         day: 'numeric',
@@ -208,6 +332,7 @@ export function calculateWeightLossJourney(
   return {
     weeksNeeded,
     weeklyLossKg: Number(weeklyRate.toFixed(2)),
+    weeklyRateKg: Number(weeklyRate.toFixed(2)),
     projectionPoints,
     estimatedTargetDate: estimatedTargetDate.toLocaleDateString('en-US', {
       month: 'short',
@@ -216,3 +341,5 @@ export function calculateWeightLossJourney(
     }),
   };
 }
+
+export const calculateWeightJourney = calculateWeightLossJourney;

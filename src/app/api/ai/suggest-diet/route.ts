@@ -10,6 +10,7 @@ export async function POST(req: NextRequest) {
       scheduleText = '',
       targetCalories = 1800,
       targetProteinG = 140,
+      goal = 'fat_loss',
       apiKey: clientApiKey,
       provider: clientProvider,
     } = await req.json();
@@ -21,8 +22,18 @@ export async function POST(req: NextRequest) {
 
     if (aiProvider) {
       try {
-        const systemPrompt = `You are an elite sports nutritionist and dietitian specializing in fat loss and muscle retention.
+        const goalExpertise =
+          goal === 'muscle_gain'
+            ? 'specializing in muscle hypertrophy, lean bulking, and athletic muscle building'
+            : goal === 'weight_gain'
+            ? 'specializing in healthy calorie-dense bulking, healthy weight gain, and mass building'
+            : goal === 'maintenance'
+            ? 'specializing in body recomposition, energy balance, and sustained fitness'
+            : 'specializing in fat loss, metabolic conditioning, and muscle retention';
+
+        const systemPrompt = `You are an elite sports nutritionist and dietitian ${goalExpertise}.
 Design a highly practical, realistic 1-day meal plan strictly matching the user's criteria:
+- Goal: ${goal.replace('_', ' ')}
 - Diet Preference: ${dietType}
 - Available Foods / Groceries: ${pantryText || 'Standard household groceries'}
 - Preferred Timings / Schedule: ${scheduleText || 'Breakfast 8:30 AM, Lunch 1:30 PM, Snack 5:00 PM, Dinner 8:30 PM'}
@@ -60,7 +71,7 @@ Return ONLY a JSON object matching this schema:
 
         const parsed = await aiProvider.generateJSON<any>({
           systemPrompt,
-          userPrompt: `Generate a fat loss diet plan with: Diet=${dietType}, Pantry=${pantryText}, Schedule=${scheduleText}, Calories=${targetCalories}, Protein=${targetProteinG}g`,
+          userPrompt: `Generate a ${goal.replace('_', ' ')} diet plan with: Diet=${dietType}, Pantry=${pantryText}, Schedule=${scheduleText}, Calories=${targetCalories}, Protein=${targetProteinG}g`,
           temperature: 0.3,
         });
 
@@ -73,8 +84,8 @@ Return ONLY a JSON object matching this schema:
             targetCalories,
             targetProteinG,
             meals: parsed.meals,
-            summaryNotes: parsed.summaryNotes || 'Custom high-protein fat loss plan.',
-            projectedWeeklyFatLossKg: parsed.projectedWeeklyFatLossKg || 0.5,
+            summaryNotes: parsed.summaryNotes || `Custom ${goal.replace('_', ' ')} nutrition plan.`,
+            projectedWeeklyFatLossKg: parsed.projectedWeeklyFatLossKg || (goal === 'fat_loss' ? 0.5 : 0),
             createdAt: new Date().toISOString(),
           };
 
@@ -86,7 +97,7 @@ Return ONLY a JSON object matching this schema:
     }
 
     // Heuristic Diet Planner Fallback
-    const fallbackPlan = generateHeuristicDietPlan(dietType, pantryText, scheduleText, targetCalories, targetProteinG);
+    const fallbackPlan = generateHeuristicDietPlan(dietType, pantryText, scheduleText, targetCalories, targetProteinG, goal);
     return NextResponse.json(fallbackPlan);
   } catch (err: any) {
     console.error('Error in suggest-diet API:', err);
@@ -102,10 +113,20 @@ function generateHeuristicDietPlan(
   pantryText: string,
   scheduleText: string,
   targetCalories: number,
-  targetProteinG: number
+  targetProteinG: number,
+  goal: string = 'fat_loss'
 ): DietPlan {
   const isNonVeg = dietType === 'non_veg';
   const isEggetarian = dietType === 'eggetarian' || isNonVeg;
+
+  const dinnerTitle =
+    goal === 'muscle_gain'
+      ? 'High-Protein Muscle Recovery Dinner'
+      : goal === 'weight_gain'
+      ? 'Nutrient-Dense Mass Building Dinner'
+      : goal === 'maintenance'
+      ? 'Balanced Evening Recovery Dinner'
+      : 'Light Digestive Fat-Loss Dinner';
 
   const meals: PlannedMeal[] = [
     {
@@ -158,12 +179,12 @@ function generateHeuristicDietPlan(
       ],
       totalCalories: 155,
       proteinG: 10,
-      tips: 'Prevents evening energy dips and stops late-night binge eating.',
+      tips: 'Prevents evening energy dips and maintains steady blood glucose.',
     },
     {
       mealType: 'dinner',
       time: '8:30 PM',
-      title: 'Light Digestive Fat-Loss Dinner',
+      title: dinnerTitle,
       items: [
         { name: 'Soya Chunks / Paneer / Tofu Stir-fry', portion: '40g soya chunks or 100g paneer with broccoli & capsicum', calories: 250, proteinG: 22, carbsG: 14, fatG: 7 },
         { name: 'Whole Wheat Roti / Quinoa', portion: '1 medium roti or 1/2 cup quinoa', calories: 95, proteinG: 3.5, carbsG: 18, fatG: 1.5 },
@@ -171,7 +192,7 @@ function generateHeuristicDietPlan(
       ],
       totalCalories: 425,
       proteinG: 29.5,
-      tips: 'Finish dinner at least 2.5 hours before sleeping for optimal growth hormone release during sleep.',
+      tips: 'Finish dinner at least 2.5 hours before sleeping for optimal recovery during sleep.',
     },
   ];
 
@@ -187,7 +208,7 @@ function generateHeuristicDietPlan(
     pantryItems: pantryText ? pantryText.split(',').map((s) => s.trim()) : ['Eggs', 'Oats', 'Paneer', 'Dal', 'Rice'],
     scheduleDescription: scheduleText || 'Standard 4-meal schedule',
     meals,
-    summaryNotes: `Tailored ${dietType} fat loss plan. Delivers ~${totalCals} kcal with ~${Math.round(totalProtein)}g high-satiety protein.`,
-    projectedWeeklyFatLossKg: 0.52,
+    summaryNotes: `Tailored ${dietType} ${goal.replace('_', ' ')} plan. Delivers ~${totalCals} kcal with ~${Math.round(totalProtein)}g high-quality protein.`,
+    projectedWeeklyFatLossKg: goal === 'fat_loss' ? 0.52 : 0,
   };
 }

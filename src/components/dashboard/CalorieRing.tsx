@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import React from 'react';
 import { UserProfile } from '@/types';
@@ -40,15 +40,41 @@ export const CalorieRing: React.FC<CalorieRingProps> = ({ consumed, profile }) =
       {/* Top Section: Hero numbers + Compact Radial Progress */}
       <div className="flex items-center justify-between gap-3">
         <div>
-          <span className="text-[10px] font-black uppercase tracking-wider text-slate-400 block mb-0.5">
-            Calorie Target
-          </span>
+          <div className="flex items-center gap-2 mb-1">
+            <span className="text-[10px] font-black uppercase tracking-wider text-slate-400">
+              Calorie Target
+            </span>
+            {profile.goal === 'muscle_gain' && (
+              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-300">
+                💪 Muscle Building
+              </span>
+            )}
+            {profile.goal === 'weight_gain' && (
+              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-300">
+                📈 Weight Gain
+              </span>
+            )}
+            {profile.goal === 'fat_loss' && (
+              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400">
+                🔥 Fat Loss
+              </span>
+            )}
+            {profile.goal === 'maintenance' && (
+              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-purple-50 dark:bg-purple-950/60 text-purple-600 dark:text-purple-300">
+                ⚖️ Maintenance
+              </span>
+            )}
+          </div>
           <div className="flex items-baseline gap-1.5">
             <span className="text-3xl font-black tracking-tight text-slate-900 dark:text-white">
-              {remaining > 0 ? remaining.toLocaleString() : 0}
+              {remaining > 0 ? remaining.toLocaleString() : Math.abs(remaining).toLocaleString()}
             </span>
             <span className="text-xs font-bold text-slate-400 dark:text-slate-500">
-              {remaining >= 0 ? 'kcal left' : 'kcal over'}
+              {remaining >= 0
+                ? profile.goal === 'muscle_gain' || profile.goal === 'weight_gain'
+                  ? 'kcal to surplus'
+                  : 'kcal left'
+                : 'kcal over budget'}
             </span>
           </div>
 
@@ -59,10 +85,16 @@ export const CalorieRing: React.FC<CalorieRingProps> = ({ consumed, profile }) =
             <span className={`inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full ${
               remaining >= 0
                 ? 'bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400'
+                : (profile.goal === 'muscle_gain' || profile.goal === 'weight_gain')
+                ? 'bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400'
                 : 'bg-rose-50 dark:bg-rose-950/50 text-rose-600 dark:text-rose-400'
             }`}>
               <Flame className="w-2.5 h-2.5" />
-              {remaining >= 0 ? 'On Target' : 'Over'}
+              {remaining >= 0
+                ? 'On Target'
+                : (profile.goal === 'muscle_gain' || profile.goal === 'weight_gain')
+                ? 'Surplus Reached'
+                : 'Over'}
             </span>
           </div>
         </div>
