@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { UserProfile, Gender, ActivityLevel, FitnessGoal } from '@/types';
 import { calculateTargets, ACTIVITY_LABELS } from '@/utils/nutritionCalculations';
-import { User, Key, Check, Calculator, Sparkles } from 'lucide-react';
+import { User, Check, Calculator } from 'lucide-react';
 
 interface ProfileTabProps {
   userProfile: UserProfile;
@@ -288,61 +288,6 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({ userProfile, onSaveProfi
                 />
               </div>
             </div>
-          </div>
-
-          {/* Multi-Model AI Factory Settings */}
-          <div className="pt-3 border-t border-slate-100 dark:border-slate-800 space-y-2">
-            <div className="flex items-center justify-between">
-              <label className="text-xs font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
-                <Key className="w-3.5 h-3.5 text-emerald-500" />
-                AI Model Engine (Multi-Provider Factory):
-              </label>
-              <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded-md">
-                Plug & Play
-              </span>
-            </div>
-
-            {/* Provider Selector */}
-            <div className="grid grid-cols-4 gap-1.5">
-              {[
-                { id: undefined, label: 'Auto' },
-                { id: 'gemini' as const, label: 'Gemini' },
-                { id: 'groq' as const, label: 'Groq' },
-                { id: 'openai' as const, label: 'OpenAI' },
-              ].map((p) => (
-                <button
-                  key={p.label}
-                  type="button"
-                  onClick={() => setFormData({ ...formData, aiProvider: p.id })}
-                  className={`py-1.5 text-[11px] font-bold rounded-xl border transition-all ${
-                    formData.aiProvider === p.id
-                      ? 'bg-emerald-500 text-white border-emerald-500 shadow-2xs'
-                      : 'bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:bg-slate-100'
-                  }`}
-                >
-                  {p.label}
-                </button>
-              ))}
-            </div>
-
-            <input
-              type="password"
-              placeholder={
-                formData.aiProvider === 'gemini'
-                  ? 'Gemini API Key (AIzaSy...)'
-                  : formData.aiProvider === 'groq'
-                  ? 'Groq API Key (gsk_...)'
-                  : formData.aiProvider === 'claude'
-                  ? 'Claude API Key (sk-ant-...)'
-                  : 'API Key (OpenAI / Gemini / Groq / Claude)...'
-              }
-              value={formData.apiKey || ''}
-              onChange={(e) => setFormData({ ...formData, apiKey: e.target.value })}
-              className="w-full p-2.5 text-xs font-mono rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white placeholder-slate-400"
-            />
-            <p className="text-[10px] text-slate-400 leading-relaxed">
-              💡 <strong>Zero friction:</strong> If left empty, NutriAI automatically uses your server <code className="text-emerald-600">.env.local</code> key or falls back to the built-in smart offline heuristic engine (₹0 cost).
-            </p>
           </div>
 
           {/* Submit Button */}

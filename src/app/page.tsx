@@ -36,11 +36,14 @@ import { ProfileTab } from '@/components/profile/ProfileTab';
 import { CommunityTab } from '@/components/community/CommunityTab';
 import { RescueModal } from '@/components/rescue/RescueModal';
 import { PwaInstallPrompt } from '@/components/common/PwaInstallPrompt';
+import { DateNavigator } from '@/components/common/DateNavigator';
+import { getTodayDateString } from '@/utils/dateUtils';
 
 export default function Home() {
   const [currentUser, setCurrentUser] = useState<UserAccount | null>(null);
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
   const [activeTab, setActiveTab] = useState<ActiveTab>('dashboard');
+  const [selectedDate, setSelectedDate] = useState<string>(getTodayDateString());
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [todayLog, setTodayLog] = useState<DailyLog | null>(null);
   const [allLogs, setAllLogs] = useState<Record<string, DailyLog>>({});
@@ -186,8 +189,15 @@ export default function Home() {
     return null;
   }
 
-  // Calculate today's consumed totals
-  const consumedTotals = (todayLog.meals || []).reduce(
+  const todayStr = getTodayDateString();
+  const activeLog: DailyLog = allLogs[selectedDate] || (selectedDate === todayStr ? todayLog : {
+    date: selectedDate,
+    waterConsumedMl: 0,
+    meals: [],
+  });
+
+  // Calculate selected date's consumed totals
+  const consumedTotals = (activeLog.meals || []).reduce(
     (acc, m) => ({
       calories: acc.calories + (m.totalCalories || 0),
       protein: acc.protein + (m.totalProtein || 0),
@@ -199,35 +209,48 @@ export default function Home() {
 
   const handleUpdateWater = (amountMl: number) => {
     const updated: DailyLog = {
-      ...todayLog,
+      ...activeLog,
       waterConsumedMl: amountMl,
     };
-    setTodayLog(updated);
-    saveTodayLog(updated, currentUser.id);
-
-    const updatedAll = { ...allLogs, [todayLog.date]: updated };
+    const updatedAll = { ...allLogs, [selectedDate]: updated };
     setAllLogs(updatedAll);
     saveAllDailyLogs(updatedAll, currentUser.id);
+
+    if (selectedDate === todayStr) {
+      setTodayLog(updated);
+      saveTodayLog(updated, currentUser.id);
+    }
   };
 
   const handleSaveMeal = (meal: MealLog) => {
-    const updatedMeals = [...(todayLog.meals || []), meal];
+    const targetDate = meal.date || selectedDate;
+    const targetLog = allLogs[targetDate] || (targetDate === todayStr ? todayLog : {
+      date: targetDate,
+      waterConsumedMl: 0,
+      meals: [],
+    });
+
+    const updatedMeals = [...(targetLog.meals || []), meal];
     const updated: DailyLog = {
-      ...todayLog,
+      ...targetLog,
       meals: updatedMeals,
     };
-    setTodayLog(updated);
-    saveTodayLog(updated, currentUser.id);
 
-    const updatedAll = { ...allLogs, [todayLog.date]: updated };
+    const updatedAll = { ...allLogs, [targetDate]: updated };
     setAllLogs(updatedAll);
     saveAllDailyLogs(updatedAll, currentUser.id);
 
+    if (targetDate === todayStr) {
+      setTodayLog(updated);
+      saveTodayLog(updated, currentUser.id);
+    }
+
+    setSelectedDate(targetDate);
     setActiveTab('dashboard');
   };
 
   const handleDeleteMealItem = (mealId: string, itemId: string) => {
-    const updatedMeals = (todayLog.meals || [])
+    const updatedMeals = (activeLog.meals || [])
       .map((meal) => {
         if (meal.id !== mealId) return meal;
         const filteredItems = meal.items.filter((it) => it.id !== itemId);
@@ -243,15 +266,18 @@ export default function Home() {
       .filter((meal) => meal.items.length > 0);
 
     const updated: DailyLog = {
-      ...todayLog,
+      ...activeLog,
       meals: updatedMeals,
     };
-    setTodayLog(updated);
-    saveTodayLog(updated, currentUser.id);
 
-    const updatedAll = { ...allLogs, [todayLog.date]: updated };
+    const updatedAll = { ...allLogs, [selectedDate]: updated };
     setAllLogs(updatedAll);
     saveAllDailyLogs(updatedAll, currentUser.id);
+
+    if (selectedDate === todayStr) {
+      setTodayLog(updated);
+      saveTodayLog(updated, currentUser.id);
+    }
   };
 
   const handleOpenLoggerForMeal = (type: MealType) => {
@@ -307,16 +333,22 @@ export default function Home() {
         <main className="flex-1 p-4 overflow-y-auto">
           {activeTab === 'dashboard' && (
             <div className="space-y-4 pb-20">
+              {/* Date & Calendar Navigator */}
+              <DateNavigator
+                selectedDate={selectedDate}
+                onSelectDate={setSelectedDate}
+              />
+
               <CalorieRing consumed={consumedTotals} profile={userProfile} />
 
               <MealSection
-                meals={todayLog.meals || []}
+                meals={activeLog.meals || []}
                 onOpenLoggerForMeal={handleOpenLoggerForMeal}
                 onDeleteMealItem={handleDeleteMealItem}
               />
 
               <WaterTracker
-                consumedMl={todayLog.waterConsumedMl || 0}
+                consumedMl={activeLog.waterConsumedMl || 0}
                 targetMl={userProfile.waterTargetMl || 2500}
                 onUpdateWater={handleUpdateWater}
               />
@@ -354,6 +386,8 @@ export default function Home() {
           {activeTab === 'logger' && (
             <AILoggerTab
               initialMealType={loggerTargetMeal}
+              selectedDate={selectedDate}
+              onSelectDate={setSelectedDate}
               userProfile={userProfile}
               onMealSaved={handleSaveMeal}
               onOpenRescue={(tab) => {
