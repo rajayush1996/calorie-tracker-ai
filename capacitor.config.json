@@ -1,0 +1,14 @@
+{
+  "appId": "com.nutriai.app",
+  "appName": "NutriAI",
+  "webDir": "out",
+  "bundledWebRuntime": false,
+  "server": {
+    "androidScheme": "https"
+  },
+  "plugins": {
+    "SplashScreen": {
+      "launchShowDuration": 1500
+    }
+  }
+}
