@@ -1,9 +1,9 @@
 'use client';
 
 import React from 'react';
-import { Home, Plus, UtensilsCrossed, TrendingUp, Users } from 'lucide-react';
+import { Home, Plus, UtensilsCrossed, TrendingUp, Dumbbell } from 'lucide-react';
 
-export type ActiveTab = 'dashboard' | 'logger' | 'diet' | 'analytics' | 'community' | 'audit' | 'profile';
+export type ActiveTab = 'dashboard' | 'workout' | 'logger' | 'diet' | 'analytics' | 'community' | 'audit' | 'profile';
 
 interface BottomNavProps {
   activeTab: ActiveTab;
@@ -13,10 +13,10 @@ interface BottomNavProps {
 export const BottomNav: React.FC<BottomNavProps> = ({ activeTab, onChangeTab }) => {
   const tabs = [
     { id: 'dashboard' as const, label: 'Today', icon: Home },
-    { id: 'diet' as const, label: 'Diet Plan', icon: UtensilsCrossed },
+    { id: 'workout' as const, label: 'Workout', icon: Dumbbell },
     { id: 'logger' as const, label: 'Log Food', icon: Plus, isHighlight: true },
+    { id: 'diet' as const, label: 'Diet Plan', icon: UtensilsCrossed },
     { id: 'analytics' as const, label: 'Journey', icon: TrendingUp },
-    { id: 'community' as const, label: 'Community', icon: Users },
   ];
 
   return (

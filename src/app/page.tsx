@@ -28,7 +28,7 @@ import { AuthScreen } from '@/components/auth/AuthScreen';
 import { OnboardingWizard } from '@/components/onboarding/OnboardingWizard';
 import { Header } from '@/components/layout/Header';
 import { HeaderDrawer } from '@/components/layout/HeaderDrawer';
-import { ExerciseGuideModal } from '@/components/exercise/ExerciseGuideModal';
+import { WorkoutTab } from '@/components/workout/WorkoutTab';
 import { BottomNav, ActiveTab } from '@/components/layout/BottomNav';
 import { CalorieRing } from '@/components/dashboard/CalorieRing';
 import { QuickFoodShortcuts } from '@/components/dashboard/QuickFoodShortcuts';
@@ -65,7 +65,6 @@ export default function Home() {
   const [showAuthForm, setShowAuthForm] = useState(false);
   const [isClient, setIsClient] = useState(false);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
-  const [isExerciseModalOpen, setIsExerciseModalOpen] = useState(false);
   const [activeWorkoutProgram, setActiveWorkoutProgram] = useState<MultiWeekWorkoutProgram | null>(null);
   const [selectedGymDayIdx, setSelectedGymDayIdx] = useState<number>(0);
   const [dietTabMode, setDietTabMode] = useState<'pantry' | 'upload'>('pantry');
@@ -584,7 +583,7 @@ export default function Home() {
                       type="button"
                       onClick={() => {
                         setSelectedGymDayIdx(todayWorkoutDayIndex !== -1 ? todayWorkoutDayIndex : 0);
-                        setIsExerciseModalOpen(true);
+                        setActiveTab('workout');
                       }}
                       className="w-full h-10 px-3 rounded-2xl bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-xs active:scale-98 transition-all"
                     >
@@ -599,7 +598,7 @@ export default function Home() {
                     </p>
                     <button
                       type="button"
-                      onClick={() => setIsExerciseModalOpen(true)}
+                      onClick={() => setActiveTab('workout')}
                       className="w-full h-10 px-3 rounded-2xl bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-xs active:scale-98 transition-all"
                     >
                       <TrendingUp className="w-3.5 h-3.5" />
@@ -704,11 +703,25 @@ export default function Home() {
                 }
                 onOpenGymWorkout={() => {
                   setSelectedGymDayIdx(todayWorkoutDayIndex !== -1 ? todayWorkoutDayIndex : 0);
-                  setIsExerciseModalOpen(true);
+                  setActiveTab('workout');
                 }}
                 currentWaterMl={activeLog.waterConsumedMl || 0}
               />
             </div>
+          )}
+
+          {activeTab === 'workout' && (
+            <WorkoutTab
+              userProfile={userProfile}
+              onLogExercise={handleLogExercise}
+              onLogWorkout={(plan) => {
+                handleLogWorkout(plan);
+                if (currentUser) {
+                  setActiveWorkoutProgram(loadActiveWorkoutProgram(currentUser.id));
+                }
+              }}
+              initialSelectedDayIndex={selectedGymDayIdx}
+            />
           )}
 
           {activeTab === 'logger' && (
@@ -793,7 +806,11 @@ export default function Home() {
           theme={theme}
           streakDays={Math.max(1, Object.keys(allLogs).length)}
           onToggleTheme={handleToggleTheme}
-          onOpenExerciseGuide={() => setIsExerciseModalOpen(true)}
+          onOpenExerciseGuide={() => {
+            setSelectedGymDayIdx(todayWorkoutDayIndex !== -1 ? todayWorkoutDayIndex : 0);
+            setActiveTab('workout');
+          }}
+          onOpenCommunity={() => setActiveTab('community')}
           onOpenUploadDiet={() => {
             setDietTabMode('upload');
             setActiveTab('diet');
@@ -802,21 +819,6 @@ export default function Home() {
           onOpenResetCenter={() => setActiveTab('profile')}
           onLogout={handleLogout}
           onFreshStart={handleFreshStart}
-        />
-
-        {/* Exercise & Form Guide Modal */}
-        <ExerciseGuideModal
-          isOpen={isExerciseModalOpen}
-          onClose={() => {
-            setIsExerciseModalOpen(false);
-            if (currentUser) {
-              setActiveWorkoutProgram(loadActiveWorkoutProgram(currentUser.id));
-            }
-          }}
-          userProfile={userProfile}
-          onLogExercise={handleLogExercise}
-          onLogWorkout={handleLogWorkout}
-          initialSelectedDayIndex={selectedGymDayIdx}
         />
       </div>
     </div>

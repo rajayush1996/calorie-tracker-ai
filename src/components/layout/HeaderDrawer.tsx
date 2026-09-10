@@ -13,6 +13,7 @@ import {
   Flame,
   ChevronRight,
   Trash2,
+  Users,
 } from 'lucide-react';
 import { UserAccount } from '@/types';
 
@@ -25,6 +26,7 @@ interface HeaderDrawerProps {
   onToggleTheme: () => void;
   onOpenExerciseGuide: () => void;
   onOpenUploadDiet: () => void;
+  onOpenCommunity?: () => void;
   onOpenProfile: () => void;
   onOpenResetCenter: () => void;
   onLogout?: () => void;
@@ -40,6 +42,7 @@ export const HeaderDrawer: React.FC<HeaderDrawerProps> = ({
   onToggleTheme,
   onOpenExerciseGuide,
   onOpenUploadDiet,
+  onOpenCommunity,
   onOpenProfile,
   onOpenResetCenter,
   onLogout,
@@ -140,6 +143,25 @@ export const HeaderDrawer: React.FC<HeaderDrawerProps> = ({
               </div>
               <ChevronRight className="w-4 h-4 text-slate-400 group-hover:translate-x-0.5 transition-transform" />
             </button>
+
+            {onOpenCommunity && (
+              <button
+                type="button"
+                onClick={() => {
+                  onClose();
+                  onOpenCommunity();
+                }}
+                className="w-full flex items-center justify-between p-3 rounded-2xl hover:bg-slate-100 dark:hover:bg-slate-800/70 text-slate-700 dark:text-slate-200 font-bold text-xs transition-colors group text-left"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-7 h-7 rounded-xl bg-violet-50 dark:bg-violet-950/60 text-violet-600 dark:text-violet-400 flex items-center justify-center">
+                    <Users className="w-4 h-4" />
+                  </div>
+                  <span>Community & Leaderboard</span>
+                </div>
+                <ChevronRight className="w-4 h-4 text-slate-400 group-hover:translate-x-0.5 transition-transform" />
+              </button>
+            )}
 
             <button
               type="button"
