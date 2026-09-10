@@ -1,4 +1,4 @@
-import { UserProfile, DailyLog, BodyMeasurement, DietPlan, MealLog, UserAccount, CommunityPost } from '@/types';
+import { UserProfile, DailyLog, BodyMeasurement, DietPlan, WorkoutPlan, MealLog, UserAccount, CommunityPost } from '@/types';
 import { calculateTargets } from './nutritionCalculations';
 
 const defaultTargets = calculateTargets(78, 175, 24, 'male', 'moderate', 'fat_loss', 'recommended', 'veg', 70);
@@ -48,6 +48,7 @@ export async function syncToFileDb(userId?: string) {
     const dailyLogs = loadAllDailyLogs(uid);
     const measurements = loadBodyMeasurements(uid);
     const dietPlan = loadActiveDietPlan(uid);
+    const workoutPlan = loadActiveWorkoutPlan(uid);
 
     await fetch('/api/db', {
       method: 'POST',
@@ -58,6 +59,7 @@ export async function syncToFileDb(userId?: string) {
         dailyLogs,
         measurements,
         dietPlan,
+        workoutPlan,
       }),
     });
   } catch (e) {
@@ -85,6 +87,9 @@ export async function restoreFromFileDb(userId: string): Promise<boolean> {
     }
     if (data.dietPlan) {
       localStorage.setItem(getKey('diet_plan', userId), JSON.stringify(data.dietPlan));
+    }
+    if (data.workoutPlan) {
+      localStorage.setItem(getKey('workout_plan', userId), JSON.stringify(data.workoutPlan));
     }
     return true;
   } catch (e) {
@@ -227,6 +232,30 @@ export function saveActiveDietPlan(plan: DietPlan, userId?: string): void {
     syncToFileDb(uid);
   } catch (e) {
     console.error('Failed to save diet plan', e);
+  }
+}
+
+export function loadActiveWorkoutPlan(userId?: string): WorkoutPlan | null {
+  if (typeof window === 'undefined') return null;
+  try {
+    const key = getKey('workout_plan', userId);
+    const raw = localStorage.getItem(key);
+    if (!raw) return null;
+    return JSON.parse(raw);
+  } catch (e) {
+    return null;
+  }
+}
+
+export function saveActiveWorkoutPlan(plan: WorkoutPlan, userId?: string): void {
+  if (typeof window === 'undefined') return;
+  const uid = userId || localStorage.getItem('nutriai_active_user_id') || 'user_demo_123';
+  try {
+    const key = getKey('workout_plan', uid);
+    localStorage.setItem(key, JSON.stringify(plan));
+    syncToFileDb(uid);
+  } catch (e) {
+    console.error('Failed to save workout plan', e);
   }
 }
 

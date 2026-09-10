@@ -127,6 +127,19 @@ export const DaySummaryCard: React.FC<DaySummaryCardProps> = ({
         </div>
       </div>
 
+      {/* Active Workout Burn Badge */}
+      {dailyLog.burnedCalories && dailyLog.burnedCalories > 0 ? (
+        <div className="flex items-center justify-between p-2.5 rounded-2xl bg-amber-50/70 dark:bg-amber-950/30 border border-amber-200/50 dark:border-amber-900/40 text-xs">
+          <div className="flex items-center gap-1.5 font-bold text-amber-900 dark:text-amber-200">
+            <Flame className="w-3.5 h-3.5 text-amber-500 fill-amber-500" />
+            <span>Active Workout Burn:</span>
+          </div>
+          <span className="font-black text-amber-600 dark:text-amber-400">
+            ~{dailyLog.burnedCalories} kcal burned
+          </span>
+        </div>
+      ) : null}
+
       {/* Preserved Daily Review Section for this Date */}
       {dailyLog.audit ? (
         <div className="p-3 rounded-2xl bg-indigo-50/80 dark:bg-indigo-950/40 border border-indigo-100 dark:border-indigo-900/40 space-y-1.5">

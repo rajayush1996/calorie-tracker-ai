@@ -138,11 +138,22 @@ export interface DailyAudit {
   coachSummary: string;
 }
 
+export interface LoggedWorkout {
+  id: string;
+  workoutTitle: string;
+  exerciseName?: string;
+  caloriesBurned: number;
+  durationMinutes?: number;
+  timestamp: string;
+}
+
 export interface DailyLog {
   date: string;
   waterConsumedMl: number;
   meals: MealLog[];
   audit?: DailyAudit;
+  burnedCalories?: number;
+  workouts?: LoggedWorkout[];
 }
 
 export interface CommunityComment {
@@ -190,5 +201,22 @@ export interface ExerciseItem {
     | 'lunge'
     | 'bench_press'
     | 'crunch'
-    | 'jumping_jack';
+    | 'jumping_jack'
+    | (string & {});
+}
+
+export interface WorkoutPlan {
+  id: string;
+  title: string;
+  targetMuscle: string;
+  equipment: string;
+  difficulty: 'Beginner' | 'Intermediate' | 'Advanced';
+  durationMinutes: number;
+  totalCaloriesBurnEstimate: number;
+  coachTip: string;
+  warmupTip: string;
+  cooldownTip: string;
+  exercises: ExerciseItem[];
+  createdAt: string;
+  provider?: string;
 }

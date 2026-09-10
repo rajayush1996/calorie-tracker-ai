@@ -1,6 +1,6 @@
 import fs from 'fs';
 import path from 'path';
-import { UserAccount, UserProfile, DailyLog, BodyMeasurement, DietPlan, CommunityPost } from '@/types';
+import { UserAccount, UserProfile, DailyLog, BodyMeasurement, DietPlan, WorkoutPlan, CommunityPost } from '@/types';
 
 export interface FileDatabase {
   users: Record<string, UserAccount>;
@@ -8,6 +8,7 @@ export interface FileDatabase {
   logs: Record<string, Record<string, DailyLog>>;
   measurements: Record<string, BodyMeasurement[]>;
   dietPlans: Record<string, DietPlan>;
+  workoutPlans?: Record<string, WorkoutPlan>;
   communityPosts: CommunityPost[];
 }
 
@@ -30,6 +31,7 @@ function ensureDbFile(): void {
         logs: {},
         measurements: {},
         dietPlans: {},
+        workoutPlans: {},
         communityPosts: [],
       };
       fs.writeFileSync(DB_FILE, JSON.stringify(initialDb), 'utf-8');
@@ -47,6 +49,7 @@ export function readDb(): FileDatabase {
     const raw = fs.readFileSync(DB_FILE, 'utf-8');
     const parsed = JSON.parse(raw);
     if (!parsed.communityPosts) parsed.communityPosts = [];
+    if (!parsed.workoutPlans) parsed.workoutPlans = {};
     memoryDbCache = parsed;
     return parsed;
   } catch (e) {
@@ -56,6 +59,7 @@ export function readDb(): FileDatabase {
       logs: {},
       measurements: {},
       dietPlans: {},
+      workoutPlans: {},
       communityPosts: [],
     };
     memoryDbCache = fallback;
@@ -83,6 +87,7 @@ export function getUserData(userId: string) {
     dailyLogs: db.logs[userId] || {},
     measurements: db.measurements[userId] || [],
     dietPlan: db.dietPlans[userId] || null,
+    workoutPlan: db.workoutPlans?.[userId] || null,
     communityPosts: db.communityPosts || [],
   };
 }
@@ -93,6 +98,7 @@ export function saveUserData(userId: string, payload: {
   dailyLogs?: Record<string, DailyLog>;
   measurements?: BodyMeasurement[];
   dietPlan?: DietPlan;
+  workoutPlan?: WorkoutPlan;
   communityPosts?: CommunityPost[];
 }) {
   const db = readDb();
@@ -102,6 +108,10 @@ export function saveUserData(userId: string, payload: {
   if (payload.dailyLogs) db.logs[userId] = payload.dailyLogs;
   if (payload.measurements) db.measurements[userId] = payload.measurements;
   if (payload.dietPlan) db.dietPlans[userId] = payload.dietPlan;
+  if (payload.workoutPlan) {
+    if (!db.workoutPlans) db.workoutPlans = {};
+    db.workoutPlans[userId] = payload.workoutPlan;
+  }
   if (payload.communityPosts) db.communityPosts = payload.communityPosts;
 
   const sizeBytes = writeDb(db);
@@ -119,6 +129,7 @@ export function resetEntireDb(): void {
     logs: {},
     measurements: {},
     dietPlans: {},
+    workoutPlans: {},
     communityPosts: [],
   };
   writeDb(initialDb);

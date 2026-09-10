@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { UserAccount, UserProfile, DailyLog, BodyMeasurement, MealLog, MealType, DailyAudit, FoodItem } from '@/types';
+import { UserAccount, UserProfile, DailyLog, BodyMeasurement, MealLog, MealType, DailyAudit, FoodItem, ExerciseItem, WorkoutPlan, LoggedWorkout } from '@/types';
 import {
   loadUserProfile,
   saveUserProfile,
@@ -375,6 +375,79 @@ export default function Home() {
     }
   };
 
+  const handleLogExercise = (exercise: ExerciseItem) => {
+    if (!currentUser) return;
+    const targetDate = selectedDate;
+    const targetLog = allLogs[targetDate] || (targetDate === todayStr ? todayLog : {
+      date: targetDate,
+      waterConsumedMl: 0,
+      meals: [],
+    });
+
+    const newWorkout: LoggedWorkout = {
+      id: `w-${Date.now()}`,
+      workoutTitle: exercise.name,
+      exerciseName: exercise.name,
+      caloriesBurned: exercise.caloriesBurnEstimate,
+      durationMinutes: 10,
+      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+    };
+
+    const updatedWorkouts = [...(targetLog.workouts || []), newWorkout];
+    const updatedBurned = (targetLog.burnedCalories || 0) + exercise.caloriesBurnEstimate;
+
+    const updated: DailyLog = {
+      ...targetLog,
+      workouts: updatedWorkouts,
+      burnedCalories: updatedBurned,
+    };
+
+    const updatedAll = { ...allLogs, [targetDate]: updated };
+    setAllLogs(updatedAll);
+    saveAllDailyLogs(updatedAll, currentUser.id);
+
+    if (targetDate === todayStr) {
+      setTodayLog(updated);
+      saveTodayLog(updated, currentUser.id);
+    }
+  };
+
+  const handleLogWorkout = (plan: WorkoutPlan) => {
+    if (!currentUser) return;
+    const targetDate = selectedDate;
+    const targetLog = allLogs[targetDate] || (targetDate === todayStr ? todayLog : {
+      date: targetDate,
+      waterConsumedMl: 0,
+      meals: [],
+    });
+
+    const newWorkout: LoggedWorkout = {
+      id: `w-${Date.now()}`,
+      workoutTitle: plan.title,
+      caloriesBurned: plan.totalCaloriesBurnEstimate,
+      durationMinutes: plan.durationMinutes,
+      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+    };
+
+    const updatedWorkouts = [...(targetLog.workouts || []), newWorkout];
+    const updatedBurned = (targetLog.burnedCalories || 0) + plan.totalCaloriesBurnEstimate;
+
+    const updated: DailyLog = {
+      ...targetLog,
+      workouts: updatedWorkouts,
+      burnedCalories: updatedBurned,
+    };
+
+    const updatedAll = { ...allLogs, [targetDate]: updated };
+    setAllLogs(updatedAll);
+    saveAllDailyLogs(updatedAll, currentUser.id);
+
+    if (targetDate === todayStr) {
+      setTodayLog(updated);
+      saveTodayLog(updated, currentUser.id);
+    }
+  };
+
   const handleRestartOnboarding = () => {
     if (userProfile && currentUser) {
       const resetProf: UserProfile = { ...userProfile, isOnboarded: false };
@@ -622,6 +695,9 @@ export default function Home() {
         <ExerciseGuideModal
           isOpen={isExerciseModalOpen}
           onClose={() => setIsExerciseModalOpen(false)}
+          userProfile={userProfile}
+          onLogExercise={handleLogExercise}
+          onLogWorkout={handleLogWorkout}
         />
       </div>
     </div>

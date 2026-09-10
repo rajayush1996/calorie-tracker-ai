@@ -1,4 +1,4 @@
-import { FoodItem, DietPlan, DailyLog, UserProfile, DailyAudit, DietType, FitnessGoal } from '@/types';
+import { FoodItem, DietPlan, WorkoutPlan, DailyLog, UserProfile, DailyAudit, DietType, FitnessGoal } from '@/types';
 
 export async function parseMealSentence(
   sentence: string,
@@ -215,6 +215,30 @@ export async function parseDietDocument(params: {
   if (!res.ok) {
     const errorData = await res.json().catch(() => ({}));
     throw new Error(errorData.error || 'Failed to parse diet document');
+  }
+
+  return res.json();
+}
+
+export async function generateWorkoutPlan(params: {
+  goal?: string;
+  equipment?: string;
+  targetMuscle?: string;
+  durationMinutes?: number;
+  fitnessLevel?: string;
+  customNotes?: string;
+  apiKey?: string;
+  provider?: string;
+}): Promise<WorkoutPlan & { provider?: string }> {
+  const res = await fetch('/api/ai/generate-workout', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(params),
+  });
+
+  if (!res.ok) {
+    const errorData = await res.json().catch(() => ({}));
+    throw new Error(errorData.error || 'Failed to generate workout plan');
   }
 
   return res.json();

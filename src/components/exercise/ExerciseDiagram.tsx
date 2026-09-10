@@ -115,6 +115,34 @@ export const ExerciseDiagram: React.FC<ExerciseDiagramProps> = ({ type, classNam
         </svg>
       );
 
+    case 'bench_press':
+      return (
+        <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" className={className}>
+          {/* Floor */}
+          <line x1="15" y1="86" x2="85" y2="86" stroke="#94A3B8" strokeWidth="2.5" strokeLinecap="round" />
+          {/* Bench surface */}
+          <line x1="22" y1="64" x2="78" y2="64" stroke="#475569" strokeWidth="4" strokeLinecap="round" />
+          {/* Bench Legs */}
+          <line x1="30" y1="64" x2="30" y2="86" stroke="#64748B" strokeWidth="3" />
+          <line x1="70" y1="64" x2="70" y2="86" stroke="#64748B" strokeWidth="3" />
+          {/* Torso lying flat */}
+          <line x1="32" y1="60" x2="65" y2="60" stroke="#10B981" strokeWidth="4" strokeLinecap="round" />
+          {/* Head on bench */}
+          <circle cx="28" cy="58" r="5" fill="#10B981" />
+          {/* Bent Legs down to floor */}
+          <polyline points="65,60 76,64 76,86" stroke="#0F766E" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round" />
+          {/* Arms pressing up */}
+          <polyline points="48,60 48,38 52,38" stroke="#0F766E" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
+          {/* Barbell */}
+          <line x1="35" y1="36" x2="65" y2="36" stroke="#334155" strokeWidth="3.5" strokeLinecap="round" />
+          {/* Barbell weights */}
+          <rect x="36" y="30" width="3" height="12" rx="1" fill="#10B981" />
+          <rect x="61" y="30" width="3" height="12" rx="1" fill="#10B981" />
+          {/* Target chest highlight */}
+          <circle cx="48" cy="59" r="3.5" fill="#F59E0B" />
+        </svg>
+      );
+
     case 'jumping_jack':
     default:
       return (
