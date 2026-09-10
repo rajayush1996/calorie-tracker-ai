@@ -4,7 +4,6 @@ import React, { useState } from 'react';
 import { UserAccount } from '@/types';
 import { signupUser, loginUser } from '@/utils/auth';
 import {
-  Sparkles,
   ArrowRight,
   Target,
   Ruler,

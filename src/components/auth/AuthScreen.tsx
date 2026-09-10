@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { UserAccount } from '@/types';
 import { signupUser, loginUser } from '@/utils/auth';
-import { Sparkles, ArrowRight, ShieldCheck, ChevronLeft } from 'lucide-react';
+import { Zap, ArrowRight, ShieldCheck, ChevronLeft, CheckCircle2 } from 'lucide-react';
 
 interface AuthScreenProps {
   onAuthenticated: (user: UserAccount) => void;
@@ -168,7 +168,7 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ onAuthenticated, onBackT
             }}
             className="w-full py-2.5 rounded-2xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs flex items-center justify-center gap-1.5 transition-all active:scale-98"
           >
-            <Sparkles className="w-3.5 h-3.5 text-emerald-500" />
+            <Zap className="w-3.5 h-3.5 text-emerald-500" />
             <span>Start Fresh as New User (Instant)</span>
           </button>
         </form>
@@ -180,8 +180,8 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ onAuthenticated, onBackT
             <span>Private Disk Storage</span>
           </div>
           <div className="flex items-center justify-center gap-1">
-            <Sparkles className="w-3.5 h-3.5 text-emerald-500" />
-            <span>AI Nutrition Intelligence</span>
+            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
+            <span>Fast & Offline Ready</span>
           </div>
         </div>
       </div>

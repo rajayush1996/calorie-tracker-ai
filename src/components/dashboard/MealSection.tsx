@@ -2,12 +2,14 @@
 
 import React, { useState } from 'react';
 import { MealType, MealLog } from '@/types';
-import { Plus, ChevronDown, ChevronUp, Trash2, Utensils } from 'lucide-react';
+import { Plus, ChevronDown, ChevronUp, Trash2, Utensils, RotateCcw } from 'lucide-react';
 
 interface MealSectionProps {
   meals: MealLog[];
+  yesterdayMeals?: MealLog[];
   onOpenLoggerForMeal: (mealType: MealType) => void;
   onDeleteMealItem: (mealId: string, itemId: string) => void;
+  onCopyYesterdayMeal?: (mealType: MealType) => void;
 }
 
 const MEAL_CONFIG: Record<MealType, { label: string; icon: string; subtitle: string }> = {
@@ -19,13 +21,15 @@ const MEAL_CONFIG: Record<MealType, { label: string; icon: string; subtitle: str
   meal_2: { label: 'Meal 2', icon: '☀️', subtitle: 'Midday nutrition' },
   meal_3: { label: 'Meal 3', icon: '🌆', subtitle: 'Evening recovery' },
   meal_4: { label: 'Meal 4', icon: '🌙', subtitle: 'Night sustenance' },
-  meal_5: { label: 'Meal 5', icon: '✨', subtitle: 'Additional fuel' },
+  meal_5: { label: 'Meal 5', icon: '🍇', subtitle: 'Late snack / night bite' },
 };
 
 export const MealSection: React.FC<MealSectionProps> = ({
   meals,
+  yesterdayMeals = [],
   onOpenLoggerForMeal,
   onDeleteMealItem,
+  onCopyYesterdayMeal,
 }) => {
   const [expandedMeal, setExpandedMeal] = useState<MealType | null>(null);
 
@@ -51,6 +55,19 @@ export const MealSection: React.FC<MealSectionProps> = ({
         </span>
       </div>
 
+      {/* Empty State Banner if no meals logged */}
+      {totalMealsLogged === 0 && (
+        <div className="p-4 rounded-3xl border border-dashed border-slate-200 dark:border-slate-800 bg-white/50 dark:bg-slate-900/30 text-center space-y-1 py-4">
+          <span className="text-2xl block select-none">🥗</span>
+          <h3 className="text-xs font-black text-slate-800 dark:text-slate-200">
+            No meals logged yet today
+          </h3>
+          <p className="text-[11px] text-slate-400 max-w-xs mx-auto">
+            Tap a meal below, snap a plate photo, or use 1-tap quick foods to start your day!
+          </p>
+        </div>
+      )}
+
       {/* 4 Clean Meal Cards */}
       <div className="space-y-2.5">
         {mealTypes.map((type) => {
@@ -63,6 +80,8 @@ export const MealSection: React.FC<MealSectionProps> = ({
           const allItems = mealLogs.flatMap((m) => m.items.map((it) => ({ ...it, parentMealId: m.id })));
           const hasItems = allItems.length > 0;
           const isExpanded = expandedMeal === type;
+          const yMealLogs = yesterdayMeals.filter((m) => m.mealType === type);
+          const canRepeatYesterday = yMealLogs.length > 0 && Boolean(onCopyYesterdayMeal);
 
           return (
             <div
@@ -122,14 +141,27 @@ export const MealSection: React.FC<MealSectionProps> = ({
                       </div>
                     </>
                   ) : (
-                    <button
-                      type="button"
-                      onClick={() => onOpenLoggerForMeal(type)}
-                      className="px-2.5 py-1 rounded-xl bg-slate-100 hover:bg-emerald-50 dark:bg-slate-800 dark:hover:bg-emerald-950/40 text-slate-600 hover:text-emerald-600 dark:text-slate-400 dark:hover:text-emerald-400 text-[11px] font-bold flex items-center gap-1 transition-all active:scale-95"
-                    >
-                      <Plus className="w-3 h-3" />
-                      <span>Log</span>
-                    </button>
+                    <div className="flex items-center gap-1.5">
+                      {canRepeatYesterday && (
+                        <button
+                          type="button"
+                          onClick={() => onCopyYesterdayMeal?.(type)}
+                          className="px-2 py-1 rounded-xl bg-blue-50 hover:bg-blue-100 dark:bg-blue-950/40 dark:hover:bg-blue-900/40 text-blue-600 dark:text-blue-300 text-[10px] font-bold flex items-center gap-1 transition-all active:scale-95"
+                          title="Repeat yesterday's meal"
+                        >
+                          <RotateCcw className="w-2.5 h-2.5" />
+                          <span>Repeat</span>
+                        </button>
+                      )}
+                      <button
+                        type="button"
+                        onClick={() => onOpenLoggerForMeal(type)}
+                        className="px-2.5 py-1 rounded-xl bg-slate-100 hover:bg-emerald-50 dark:bg-slate-800 dark:hover:bg-emerald-950/40 text-slate-600 hover:text-emerald-600 dark:text-slate-400 dark:hover:text-emerald-400 text-[11px] font-bold flex items-center gap-1 transition-all active:scale-95"
+                      >
+                        <Plus className="w-3 h-3" />
+                        <span>Log</span>
+                      </button>
+                    </div>
                   )}
                 </div>
               </div>

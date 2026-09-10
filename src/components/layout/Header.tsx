@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Flame, Sparkles, Calendar, Sun, Moon } from 'lucide-react';
+import { Flame, Calendar, Sun, Moon } from 'lucide-react';
 import { UserAccount } from '@/types';
 
 interface HeaderProps {

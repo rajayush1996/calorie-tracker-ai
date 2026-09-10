@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { DailyLog, UserProfile, DailyAudit } from '@/types';
 import { generateDailyAudit } from '@/services/aiService';
 import { formatDateDisplay, isToday, isYesterday } from '@/utils/dateUtils';
-import { Moon, Sparkles, CheckCircle2, AlertTriangle, ArrowRight, RefreshCw, Trophy } from 'lucide-react';
+import { Moon, CheckCircle2, AlertTriangle, ArrowRight, RefreshCw, Trophy } from 'lucide-react';
 
 interface DailyAuditTabProps {
   dailyLog: DailyLog;

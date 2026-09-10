@@ -10,9 +10,9 @@ import {
   Sun,
   Moon,
   LogOut,
-  Sparkles,
   Flame,
   ChevronRight,
+  Trash2,
 } from 'lucide-react';
 import { UserAccount } from '@/types';
 
@@ -28,6 +28,7 @@ interface HeaderDrawerProps {
   onOpenProfile: () => void;
   onOpenResetCenter: () => void;
   onLogout?: () => void;
+  onFreshStart?: () => void;
 }
 
 export const HeaderDrawer: React.FC<HeaderDrawerProps> = ({
@@ -42,6 +43,7 @@ export const HeaderDrawer: React.FC<HeaderDrawerProps> = ({
   onOpenProfile,
   onOpenResetCenter,
   onLogout,
+  onFreshStart,
 }) => {
   if (!isOpen) return null;
 
@@ -177,6 +179,23 @@ export const HeaderDrawer: React.FC<HeaderDrawerProps> = ({
             <span className="text-[10px] text-slate-400 font-semibold">Toggle</span>
           </button>
 
+          {/* Fresh Start / Delete All Data */}
+          {onFreshStart && (
+            <button
+              type="button"
+              onClick={() => {
+                if (window.confirm('Delete all meal logs, goals, and history for a completely fresh start?')) {
+                  onClose();
+                  onFreshStart();
+                }
+              }}
+              className="w-full flex items-center gap-2.5 p-2.5 rounded-2xl hover:bg-rose-50 dark:hover:bg-rose-950/30 text-xs font-bold text-rose-500 hover:text-rose-600 dark:hover:text-rose-400 transition-colors text-left"
+            >
+              <Trash2 className="w-4 h-4 text-rose-500" />
+              <span>Delete All Data & Fresh Start</span>
+            </button>
+          )}
+
           {/* Logout */}
           {onLogout && (
             <button
@@ -185,7 +204,7 @@ export const HeaderDrawer: React.FC<HeaderDrawerProps> = ({
                 onClose();
                 onLogout();
               }}
-              className="w-full flex items-center gap-2.5 p-2.5 rounded-2xl hover:bg-rose-50 dark:hover:bg-rose-950/30 text-xs font-bold text-slate-500 hover:text-rose-600 dark:hover:text-rose-400 transition-colors text-left"
+              className="w-full flex items-center gap-2.5 p-2.5 rounded-2xl hover:bg-slate-100 dark:hover:bg-slate-800 text-xs font-bold text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 transition-colors text-left"
             >
               <LogOut className="w-4 h-4" />
               <span>Log Out Account</span>

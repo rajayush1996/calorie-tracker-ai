@@ -13,7 +13,7 @@ import {
   Share2,
   Check,
   TrendingDown,
-  Sparkles,
+  ShieldCheck,
   Trophy,
 } from 'lucide-react';
 
@@ -284,7 +284,7 @@ export const CommunityTab: React.FC<CommunityTabProps> = ({ currentUser, userPro
                 </div>
 
                 <div className="text-[11px] text-slate-400 flex items-center gap-1">
-                  <Sparkles className="w-3 h-3 text-emerald-500" />
+                  <ShieldCheck className="w-3 h-3 text-emerald-500" />
                   <span>Verified Journey</span>
                 </div>
               </div>

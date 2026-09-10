@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import Image from 'next/image';
-import { ArrowRight, ChevronRight, Sparkles, Check } from 'lucide-react';
+import { ArrowRight, ChevronRight, Flame, Check } from 'lucide-react';
 
 interface AppOnboardingCarouselProps {
   onFinish: () => void;
@@ -111,7 +111,7 @@ export const AppOnboardingCarousel: React.FC<AppOnboardingCarouselProps> = ({ on
             <span
               className={`inline-flex items-center gap-1 text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded-full border ${slide.badgeColor}`}
             >
-              <Sparkles className="w-2.5 h-2.5" />
+              <Flame className="w-2.5 h-2.5 text-amber-500" />
               {slide.badge}
             </span>
           </div>

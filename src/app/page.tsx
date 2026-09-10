@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { UserAccount, UserProfile, DailyLog, BodyMeasurement, MealLog, MealType, DailyAudit } from '@/types';
+import { UserAccount, UserProfile, DailyLog, BodyMeasurement, MealLog, MealType, DailyAudit, FoodItem } from '@/types';
 import {
   loadUserProfile,
   saveUserProfile,
@@ -22,6 +22,7 @@ import {
   saveTheme,
 } from '@/utils/auth';
 
+import { AppSplashScreen } from '@/components/common/AppSplashScreen';
 import { AppOnboardingCarousel } from '@/components/auth/AppOnboardingCarousel';
 import { AuthScreen } from '@/components/auth/AuthScreen';
 import { OnboardingWizard } from '@/components/onboarding/OnboardingWizard';
@@ -30,6 +31,7 @@ import { HeaderDrawer } from '@/components/layout/HeaderDrawer';
 import { ExerciseGuideModal } from '@/components/exercise/ExerciseGuideModal';
 import { BottomNav, ActiveTab } from '@/components/layout/BottomNav';
 import { CalorieRing } from '@/components/dashboard/CalorieRing';
+import { QuickFoodShortcuts } from '@/components/dashboard/QuickFoodShortcuts';
 import { WaterTracker } from '@/components/dashboard/WaterTracker';
 import { MealSection } from '@/components/dashboard/MealSection';
 import { AILoggerTab } from '@/components/ai-logger/AILoggerTab';
@@ -42,8 +44,8 @@ import { RescueModal } from '@/components/rescue/RescueModal';
 import { PwaInstallPrompt } from '@/components/common/PwaInstallPrompt';
 import { DateNavigator } from '@/components/common/DateNavigator';
 import { DaySummaryCard } from '@/components/dashboard/DaySummaryCard';
-import { getTodayDateString } from '@/utils/dateUtils';
-import { Sparkles, RotateCcw } from 'lucide-react';
+import { getTodayDateString, getYesterdayDateString } from '@/utils/dateUtils';
+import { RotateCcw } from 'lucide-react';
 
 export default function Home() {
   const [currentUser, setCurrentUser] = useState<UserAccount | null>(null);
@@ -62,6 +64,7 @@ export default function Home() {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [isExerciseModalOpen, setIsExerciseModalOpen] = useState(false);
   const [dietTabMode, setDietTabMode] = useState<'pantry' | 'upload'>('pantry');
+  const [showSplash, setShowSplash] = useState(true);
 
   // Initialize Auth & Theme
   useEffect(() => {
@@ -292,6 +295,46 @@ export default function Home() {
     setActiveTab('logger');
   };
 
+  const handleCopyYesterdayMeal = (mealType: MealType) => {
+    if (!currentUser) return;
+    const yesterday = getYesterdayDateString();
+    const yLog = allLogs[yesterday];
+    if (!yLog || !yLog.meals) return;
+    const sourceMeals = yLog.meals.filter((m) => m.mealType === mealType);
+    if (sourceMeals.length === 0) return;
+
+    sourceMeals.forEach((sm) => {
+      const copiedMeal: MealLog = {
+        ...sm,
+        id: `meal-${Date.now()}-${Math.random().toString(36).substr(2, 4)}`,
+        date: selectedDate,
+        mealType,
+        items: sm.items.map((it) => ({
+          ...it,
+          id: `item-${Date.now()}-${Math.random().toString(36).substr(2, 4)}`,
+        })),
+        createdAt: new Date().toISOString(),
+      };
+      handleSaveMeal(copiedMeal);
+    });
+  };
+
+  const handleQuickAddFood = (item: FoodItem, targetMeal: MealType) => {
+    if (!currentUser) return;
+    const newMeal: MealLog = {
+      id: `meal-${Date.now()}-${Math.random().toString(36).substr(2, 4)}`,
+      date: selectedDate,
+      mealType: targetMeal,
+      totalCalories: item.calories,
+      totalProtein: item.proteinG,
+      totalCarbs: item.carbsG,
+      totalFat: item.fatG,
+      items: [item],
+      createdAt: new Date().toISOString(),
+    };
+    handleSaveMeal(newMeal);
+  };
+
   const handleSaveProfile = (profile: UserProfile) => {
     setUserProfile(profile);
     saveUserProfile(profile, currentUser.id);
@@ -356,6 +399,9 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-slate-100 dark:bg-slate-950 text-slate-900 dark:text-white flex justify-center selection:bg-emerald-500 selection:text-white transition-colors duration-200">
+      {/* App Launch Animation Splash */}
+      {showSplash && <AppSplashScreen onComplete={() => setShowSplash(false)} />}
+
       {/* Mobile-first app container */}
       <div className="w-full max-w-md min-h-screen bg-slate-50 dark:bg-slate-950 flex flex-col shadow-2xl relative border-x border-slate-200/60 dark:border-slate-800/60 transition-colors">
         {/* Sticky Header with Light/Dark toggle, Streak & Hamburger Menu */}
@@ -390,10 +436,18 @@ export default function Home() {
 
               <CalorieRing consumed={consumedTotals} profile={userProfile} />
 
+              {/* 1-Tap Quick Frequent Foods */}
+              <QuickFoodShortcuts
+                onQuickAdd={handleQuickAddFood}
+                currentMealType={loggerTargetMeal}
+              />
+
               <MealSection
                 meals={activeLog.meals || []}
+                yesterdayMeals={allLogs[getYesterdayDateString()]?.meals || []}
                 onOpenLoggerForMeal={handleOpenLoggerForMeal}
                 onDeleteMealItem={handleDeleteMealItem}
+                onCopyYesterdayMeal={handleCopyYesterdayMeal}
               />
 
               <WaterTracker
@@ -561,6 +615,7 @@ export default function Home() {
           onOpenProfile={() => setActiveTab('profile')}
           onOpenResetCenter={() => setActiveTab('profile')}
           onLogout={handleLogout}
+          onFreshStart={handleFreshStart}
         />
 
         {/* Exercise & Form Guide Modal */}

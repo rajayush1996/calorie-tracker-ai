@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { DailyLog, UserProfile, MealType } from '@/types';
-import { Calendar, Flame, Droplets, Utensils, CheckCircle2, AlertCircle, Plus, Sparkles } from 'lucide-react';
+import { Calendar, Flame, Droplets, Utensils, CheckCircle2, AlertCircle, Plus, Target } from 'lucide-react';
 import { formatDateDisplay, isToday, isYesterday } from '@/utils/dateUtils';
 
 interface DaySummaryCardProps {
@@ -132,8 +132,8 @@ export const DaySummaryCard: React.FC<DaySummaryCardProps> = ({
         <div className="p-3 rounded-2xl bg-indigo-50/80 dark:bg-indigo-950/40 border border-indigo-100 dark:border-indigo-900/40 space-y-1.5">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-1.5 text-xs font-black text-indigo-950 dark:text-indigo-200">
-              <Sparkles className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400 shrink-0" />
-              <span>Day Score: {dailyLog.audit.scoreOutOf10}/10 • Feedback Preserved</span>
+              <CheckCircle2 className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400 shrink-0" />
+              <span>Day Score: {dailyLog.audit.scoreOutOf10}/10</span>
             </div>
             {onOpenAudit && (
               <button
@@ -145,7 +145,7 @@ export const DaySummaryCard: React.FC<DaySummaryCardProps> = ({
               </button>
             )}
           </div>
-          <p className="text-xs text-indigo-900/90 dark:text-indigo-300/90 italic leading-relaxed">
+          <p className="text-xs text-slate-700 dark:text-slate-300 leading-relaxed font-medium">
             &ldquo;{dailyLog.audit.coachSummary}&rdquo;
           </p>
           {dailyLog.audit.tomorrowActionPlan && dailyLog.audit.tomorrowActionPlan.length > 0 && (
@@ -158,7 +158,7 @@ export const DaySummaryCard: React.FC<DaySummaryCardProps> = ({
       ) : mealsCount > 0 && onOpenAudit ? (
         <div className="p-2.5 rounded-2xl bg-indigo-50/40 dark:bg-indigo-950/20 border border-indigo-100/60 dark:border-indigo-900/30 flex items-center justify-between">
           <div className="flex items-center gap-1.5 text-xs text-slate-600 dark:text-slate-400">
-            <Sparkles className="w-3.5 h-3.5 text-indigo-500" />
+            <Target className="w-3.5 h-3.5 text-indigo-500" />
             <span>Ready for your daily review?</span>
           </div>
           <button

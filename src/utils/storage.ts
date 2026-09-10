@@ -382,6 +382,7 @@ export function resetAppToCleanSlate(): void {
       }
     }
     keysToRemove.forEach((k) => localStorage.removeItem(k));
+    fetch('/api/reset', { method: 'POST' }).catch(() => {});
   } catch (e) {
     console.error('Failed to reset app', e);
   }

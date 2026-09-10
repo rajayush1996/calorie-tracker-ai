@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { UserProfile } from '@/types';
 import { getAICravingSwap, getAIDamageControl } from '@/services/aiService';
 import {
-  Sparkles,
+  Zap,
   X,
   Flame,
   ShieldAlert,
@@ -170,7 +170,7 @@ export const RescueModal: React.FC<RescueModalProps> = ({
                   disabled={cravingLoading || !cravingInput.trim()}
                   className="px-3 py-2 bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-xs rounded-xl active:scale-95 disabled:opacity-50 transition-all shadow-xs shrink-0 flex items-center gap-1"
                 >
-                  {cravingLoading ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <Sparkles className="w-3.5 h-3.5" />}
+                  {cravingLoading ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <Zap className="w-3.5 h-3.5" />}
                   <span>Find Swap</span>
                 </button>
               </div>

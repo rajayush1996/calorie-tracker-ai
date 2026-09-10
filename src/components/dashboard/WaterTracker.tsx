@@ -1,7 +1,7 @@
-﻿'use client';
+'use client';
 
-import React from 'react';
-import { Droplets, Plus, Minus } from 'lucide-react';
+import React, { useState } from 'react';
+import { Droplets, Plus, Minus, Check } from 'lucide-react';
 
 interface WaterTrackerProps {
   consumedMl: number;
@@ -14,11 +14,26 @@ export const WaterTracker: React.FC<WaterTrackerProps> = ({
   targetMl,
   onUpdateWater,
 }) => {
+  const [feedback, setFeedback] = useState<string | null>(null);
   const target = targetMl || 2500;
   const percent = Math.min(100, Math.round((consumedMl / target) * 100));
 
+  const handleAdd = (amount: number) => {
+    onUpdateWater(consumedMl + amount);
+    setFeedback(`+${amount}ml added`);
+    setTimeout(() => setFeedback(null), 1200);
+  };
+
   return (
-    <div className="bg-gradient-to-br from-cyan-50/80 to-blue-50/50 dark:from-cyan-950/30 dark:to-blue-950/20 rounded-3xl p-4 border border-cyan-100/70 dark:border-cyan-900/40 shadow-2xs">
+    <div className="bg-gradient-to-br from-cyan-50/80 to-blue-50/50 dark:from-cyan-950/30 dark:to-blue-950/20 rounded-3xl p-4 border border-cyan-100/70 dark:border-cyan-900/40 shadow-2xs relative overflow-hidden">
+      {/* Dynamic Feedback Toast */}
+      {feedback && (
+        <div className="absolute top-2 right-4 bg-cyan-600 text-white text-[10px] font-black px-2.5 py-0.5 rounded-full shadow-md animate-in fade-in slide-in-from-top-1 duration-200 flex items-center gap-1 z-10">
+          <Check className="w-2.5 h-2.5 stroke-[3]" />
+          <span>{feedback}</span>
+        </div>
+      )}
+
       <div className="flex items-center justify-between gap-3">
         <div className="flex items-center gap-2.5">
           <div className="w-9 h-9 rounded-2xl bg-cyan-500 text-white flex items-center justify-center shadow-xs shadow-cyan-500/20 shrink-0">
@@ -53,15 +68,15 @@ export const WaterTracker: React.FC<WaterTrackerProps> = ({
           )}
           <button
             type="button"
-            onClick={() => onUpdateWater(consumedMl + 250)}
+            onClick={() => handleAdd(250)}
             className="px-2.5 py-1 rounded-xl bg-cyan-500 hover:bg-cyan-600 active:scale-95 text-white font-bold text-[11px] shadow-2xs transition-all flex items-center gap-0.5"
           >
             <Plus className="w-3 h-3" /> 250ml
           </button>
           <button
             type="button"
-            onClick={() => onUpdateWater(consumedMl + 500)}
-            className="px-2.5 py-1 rounded-xl bg-white dark:bg-slate-900 border border-cyan-200 dark:border-cyan-800/60 hover:bg-cyan-50 dark:hover:bg-cyan-950/40 text-cyan-700 dark:text-cyan-300 font-bold text-[11px] transition-all"
+            onClick={() => handleAdd(500)}
+            className="px-2.5 py-1 rounded-xl bg-white dark:bg-slate-900 border border-cyan-200 dark:border-cyan-800/60 hover:bg-cyan-50 dark:hover:bg-cyan-950/40 text-cyan-700 dark:text-cyan-300 font-bold text-[11px] transition-all active:scale-95"
           >
             +500ml
           </button>

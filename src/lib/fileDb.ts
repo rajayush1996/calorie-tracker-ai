@@ -111,3 +111,16 @@ export function saveUserData(userId: string, payload: {
     fileSizeKb: (sizeBytes / 1024).toFixed(2),
   };
 }
+
+export function resetEntireDb(): void {
+  const initialDb: FileDatabase = {
+    users: {},
+    profiles: {},
+    logs: {},
+    measurements: {},
+    dietPlans: {},
+    communityPosts: [],
+  };
+  writeDb(initialDb);
+}
+

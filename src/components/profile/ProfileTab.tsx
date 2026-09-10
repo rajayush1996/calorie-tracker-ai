@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { UserProfile, Gender, ActivityLevel, FitnessGoal, TransformationPace, DietType } from '@/types';
 import { calculateTargets, ACTIVITY_LABELS, GOAL_PACES } from '@/utils/nutritionCalculations';
-import { User, Check, Calculator, Sparkles, RotateCcw, Trash2, LogOut } from 'lucide-react';
+import { User, Check, Calculator, RotateCcw, Trash2, LogOut } from 'lucide-react';
 
 interface ProfileTabProps {
   userProfile: UserProfile;
@@ -478,7 +478,7 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({
             className="p-3 rounded-2xl bg-rose-50/50 hover:bg-rose-100/50 dark:bg-rose-950/20 dark:hover:bg-rose-950/40 border border-rose-100 dark:border-rose-900/30 text-left transition-all"
           >
             <span className="text-xs font-bold text-rose-700 dark:text-rose-300 flex items-center gap-1.5">
-              <Sparkles className="w-3.5 h-3.5 text-rose-500" /> Fresh Start / Full Reset
+              <RotateCcw className="w-3.5 h-3.5 text-rose-500" /> Fresh Start / Full Reset
             </span>
             <span className="text-[10px] text-rose-600/70 dark:text-rose-400/80 block mt-0.5">
               Wipe all local data & start 100% fresh

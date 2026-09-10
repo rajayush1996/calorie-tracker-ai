@@ -10,7 +10,7 @@ import {
   PACE_CONFIG,
   GOAL_PACES,
 } from '@/utils/nutritionCalculations';
-import { Sparkles, ArrowRight, ArrowLeft, Check, Target, Flame, Scale, Ruler } from 'lucide-react';
+import { ShieldCheck, ArrowRight, ArrowLeft, Check, Target, Flame, Scale, Ruler } from 'lucide-react';
 
 interface OnboardingWizardProps {
   initialProfile: UserProfile;
@@ -569,14 +569,14 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = ({
               </div>
             </div>
 
-            {/* Automatic AI Calibration Info */}
+            {/* Recommended Strategy Info */}
             <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200/80 dark:border-slate-800 flex items-center justify-between text-xs">
               <div className="flex items-center gap-2">
-                <Sparkles className="w-4 h-4 text-emerald-500 shrink-0" />
+                <ShieldCheck className="w-4 h-4 text-emerald-500 shrink-0" />
                 <div>
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">AI Calibrated Strategy</span>
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">Recommended Daily Plan</span>
                   <span className="text-xs font-bold text-slate-800 dark:text-slate-200">
-                    {activeTargets.explanation}
+                    {activeTargets.explanation.replace(/Blueprint:|AI /gi, '').trim()}
                   </span>
                 </div>
               </div>
@@ -613,8 +613,8 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = ({
                 onClick={handleFinish}
                 className="flex-1 py-3 rounded-2xl bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-100 text-white dark:text-slate-900 font-black text-xs shadow-md flex items-center justify-center gap-2 active:scale-98 transition-all"
               >
-                <Sparkles className="w-4 h-4 text-emerald-400" />
-                <span>Launch My Custom Tracker</span>
+                <span>Start Tracking My Calories</span>
+                <ArrowRight className="w-4 h-4" />
               </button>
             </div>
           </div>
