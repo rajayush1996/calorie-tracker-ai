@@ -353,3 +353,33 @@ export function saveCommunityPosts(posts: CommunityPost[]): void {
     console.error('Failed to save community posts', e);
   }
 }
+
+export function clearAllUserData(userId?: string): void {
+  if (typeof window === 'undefined') return;
+  const uid = userId || localStorage.getItem('nutriai_active_user_id') || 'user_demo_123';
+  try {
+    localStorage.removeItem(`nutriai_${uid}_profile`);
+    localStorage.removeItem(`nutriai_${uid}_daily_logs`);
+    localStorage.removeItem(`nutriai_${uid}_measurements`);
+    localStorage.removeItem(`nutriai_${uid}_diet_plan`);
+  } catch (e) {
+    console.error('Failed to clear user data', e);
+  }
+}
+
+export function resetAppToCleanSlate(): void {
+  if (typeof window === 'undefined') return;
+  try {
+    const keysToRemove: string[] = [];
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key && (key.startsWith('nutriai_') || key.startsWith('calorie_tracker_'))) {
+        keysToRemove.push(key);
+      }
+    }
+    keysToRemove.forEach((k) => localStorage.removeItem(k));
+  } catch (e) {
+    console.error('Failed to reset app', e);
+  }
+}
+

@@ -4,13 +4,15 @@ import React, { useState } from 'react';
 import { UserProfile, Gender, ActivityLevel, FitnessGoal, TransformationPace, DietType } from '@/types';
 import { calculateTargets, ACTIVITY_LABELS, GOAL_PACES } from '@/utils/nutritionCalculations';
 import { verifyTargetsWithAI } from '@/services/aiService';
-import { User, Check, Calculator, Sparkles, RefreshCw, RotateCcw, Trash2, AlertTriangle } from 'lucide-react';
+import { User, Check, Calculator, Sparkles, RefreshCw, RotateCcw, Trash2, AlertTriangle, LogOut } from 'lucide-react';
 
 interface ProfileTabProps {
   userProfile: UserProfile;
   onSaveProfile: (profile: UserProfile) => void;
   onRestartOnboarding?: () => void;
   onResetMeals?: () => void;
+  onLogout?: () => void;
+  onFreshStart?: () => void;
 }
 
 type ProfileFormData = Omit<
@@ -41,6 +43,8 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({
   onSaveProfile,
   onRestartOnboarding,
   onResetMeals,
+  onLogout,
+  onFreshStart,
 }) => {
   const [formData, setFormData] = useState<ProfileFormData>({
     ...userProfile,
@@ -61,6 +65,8 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({
   } | null>(null);
   const [showResetConfirm, setShowResetConfirm] = useState(false);
   const [showRestartConfirm, setShowRestartConfirm] = useState(false);
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+  const [showFreshStartConfirm, setShowFreshStartConfirm] = useState(false);
 
   // Live recalculate preview safely
   const preview = calculateTargets(
@@ -496,7 +502,7 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({
             onClick={() => setShowRestartConfirm(true)}
             className="p-3 rounded-2xl bg-slate-50 hover:bg-slate-100 dark:bg-slate-800/40 dark:hover:bg-slate-800 border border-slate-200/80 dark:border-slate-800 text-left transition-all"
           >
-            <span className="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1">
+            <span className="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
               <RotateCcw className="w-3.5 h-3.5 text-emerald-500" /> Restart Setup
             </span>
             <span className="text-[10px] text-slate-500 dark:text-slate-400 block mt-0.5">
@@ -507,21 +513,47 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({
           <button
             type="button"
             onClick={() => setShowResetConfirm(true)}
+            className="p-3 rounded-2xl bg-slate-50 hover:bg-slate-100 dark:bg-slate-800/40 dark:hover:bg-slate-800 border border-slate-200/80 dark:border-slate-800 text-left transition-all"
+          >
+            <span className="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
+              <Trash2 className="w-3.5 h-3.5 text-amber-500" /> Clear Meal Logs
+            </span>
+            <span className="text-[10px] text-slate-500 dark:text-slate-400 block mt-0.5">
+              Delete logged meals & water entries
+            </span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setShowFreshStartConfirm(true)}
             className="p-3 rounded-2xl bg-rose-50/50 hover:bg-rose-100/50 dark:bg-rose-950/20 dark:hover:bg-rose-950/40 border border-rose-100 dark:border-rose-900/30 text-left transition-all"
           >
-            <span className="text-xs font-bold text-rose-700 dark:text-rose-300 flex items-center gap-1">
-              <Trash2 className="w-3.5 h-3.5 text-rose-500" /> Clear Meal Logs
+            <span className="text-xs font-bold text-rose-700 dark:text-rose-300 flex items-center gap-1.5">
+              <Sparkles className="w-3.5 h-3.5 text-rose-500" /> Fresh Start / Full Reset
             </span>
             <span className="text-[10px] text-rose-600/70 dark:text-rose-400/80 block mt-0.5">
-              Reset logged meals to clean slate
+              Wipe all local data & start 100% fresh
+            </span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setShowLogoutConfirm(true)}
+            className="p-3 rounded-2xl bg-slate-50 hover:bg-slate-100 dark:bg-slate-800/40 dark:hover:bg-slate-800 border border-slate-200/80 dark:border-slate-800 text-left transition-all"
+          >
+            <span className="text-xs font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
+              <LogOut className="w-3.5 h-3.5 text-slate-500" /> Log Out Account
+            </span>
+            <span className="text-[10px] text-slate-500 dark:text-slate-400 block mt-0.5">
+              Sign out of this session
             </span>
           </button>
         </div>
 
         {/* Confirmation modals */}
         {showRestartConfirm && (
-          <div className="p-3.5 rounded-2xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-900/50 space-y-2">
-            <p className="text-xs text-amber-900 dark:text-amber-200 font-bold">
+          <div className="p-3.5 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-900/50 space-y-2">
+            <p className="text-xs text-emerald-900 dark:text-emerald-200 font-bold">
               Restart Onboarding Wizard to recalibrate your baseline?
             </p>
             <div className="flex gap-2">
@@ -531,7 +563,7 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({
                   setShowRestartConfirm(false);
                   onRestartOnboarding?.();
                 }}
-                className="px-3 py-1.5 rounded-xl bg-amber-600 text-white font-bold text-xs shadow-2xs active:scale-95"
+                className="px-3 py-1.5 rounded-xl bg-emerald-600 text-white font-bold text-xs shadow-2xs active:scale-95"
               >
                 Yes, Restart Setup
               </button>
@@ -547,8 +579,8 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({
         )}
 
         {showResetConfirm && (
-          <div className="p-3.5 rounded-2xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900/50 space-y-2">
-            <p className="text-xs text-rose-900 dark:text-rose-200 font-bold">
+          <div className="p-3.5 rounded-2xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-900/50 space-y-2">
+            <p className="text-xs text-amber-900 dark:text-amber-200 font-bold">
               Clear all logged meals? Your profile metrics will remain intact.
             </p>
             <div className="flex gap-2">
@@ -558,7 +590,7 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({
                   setShowResetConfirm(false);
                   onResetMeals?.();
                 }}
-                className="px-3 py-1.5 rounded-xl bg-rose-600 text-white font-bold text-xs shadow-2xs active:scale-95"
+                className="px-3 py-1.5 rounded-xl bg-amber-600 text-white font-bold text-xs shadow-2xs active:scale-95"
               >
                 Yes, Clear All Meals
               </button>
@@ -566,6 +598,60 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({
                 type="button"
                 onClick={() => setShowResetConfirm(false)}
                 className="px-3 py-1.5 rounded-xl bg-slate-200 dark:bg-slate-800 text-xs font-bold text-slate-700 dark:text-slate-300"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        )}
+
+        {showFreshStartConfirm && (
+          <div className="p-3.5 rounded-2xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900/50 space-y-2">
+            <p className="text-xs text-rose-900 dark:text-rose-200 font-bold">
+              ⚠️ Start completely fresh? This will wipe all local logs, custom profile, and reset the app as a brand-new clean slate.
+            </p>
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={() => {
+                  setShowFreshStartConfirm(false);
+                  onFreshStart?.();
+                }}
+                className="px-3 py-1.5 rounded-xl bg-rose-600 text-white font-bold text-xs shadow-2xs active:scale-95"
+              >
+                Yes, Wipe & Start Fresh
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowFreshStartConfirm(false)}
+                className="px-3 py-1.5 rounded-xl bg-slate-200 dark:bg-slate-800 text-xs font-bold text-slate-700 dark:text-slate-300"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        )}
+
+        {showLogoutConfirm && (
+          <div className="p-3.5 rounded-2xl bg-slate-100 dark:bg-slate-800/80 border border-slate-300 dark:border-slate-700 space-y-2">
+            <p className="text-xs text-slate-900 dark:text-slate-100 font-bold">
+              Log out of your account on this device?
+            </p>
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={() => {
+                  setShowLogoutConfirm(false);
+                  onLogout?.();
+                }}
+                className="px-3 py-1.5 rounded-xl bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-bold text-xs shadow-2xs active:scale-95"
+              >
+                Yes, Log Out
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowLogoutConfirm(false)}
+                className="px-3 py-1.5 rounded-xl bg-slate-200 dark:bg-slate-700 text-xs font-bold text-slate-700 dark:text-slate-300"
               >
                 Cancel
               </button>

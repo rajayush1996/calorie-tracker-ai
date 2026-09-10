@@ -152,6 +152,25 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ onAuthenticated, onBackT
             <span>{isSignUp ? 'Continue to Personal Calibration' : 'Sign In to My Diary'}</span>
             <ArrowRight className="w-4 h-4" />
           </button>
+
+          <div className="relative flex items-center justify-center py-0.5">
+            <div className="border-t border-slate-200 dark:border-slate-800 w-full absolute" />
+            <span className="bg-white px-2.5 text-[10px] uppercase font-bold text-slate-400 relative z-10">
+              or
+            </span>
+          </div>
+
+          <button
+            type="button"
+            onClick={() => {
+              const freshUser = signupUser('Fresh User', `user_${Date.now()}@nutriai.local`);
+              onAuthenticated(freshUser);
+            }}
+            className="w-full py-2.5 rounded-2xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs flex items-center justify-center gap-1.5 transition-all active:scale-98"
+          >
+            <Sparkles className="w-3.5 h-3.5 text-emerald-500" />
+            <span>Start Fresh as New User (Instant)</span>
+          </button>
         </form>
 
         {/* Value props footer */}

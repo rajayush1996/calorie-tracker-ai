@@ -12,6 +12,7 @@ import {
   loadBodyMeasurements,
   saveBodyMeasurements,
   restoreFromFileDb,
+  resetAppToCleanSlate,
 } from '@/utils/storage';
 import {
   getActiveUser,
@@ -104,6 +105,18 @@ export default function Home() {
     logoutUser();
     setCurrentUser(null);
     setUserProfile(null);
+    setShowAuthForm(true);
+  };
+
+  const handleFreshStart = () => {
+    resetAppToCleanSlate();
+    logoutUser();
+    setCurrentUser(null);
+    setUserProfile(null);
+    setTodayLog(null);
+    setAllLogs({});
+    setMeasurements([]);
+    setShowAuthForm(false);
   };
 
   const handleToggleTheme = () => {
@@ -503,6 +516,8 @@ export default function Home() {
               onSaveProfile={handleSaveProfile}
               onRestartOnboarding={handleRestartOnboarding}
               onResetMeals={handleResetMeals}
+              onLogout={handleLogout}
+              onFreshStart={handleFreshStart}
             />
           )}
         </main>
