@@ -1,6 +1,7 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert';
 import { generateHeuristicWorkoutPlan } from '../src/app/api/ai/generate-workout/route';
+import { generateHeuristicMultiWeekProgram } from '../src/app/api/ai/generate-workout-program/route';
 
 describe('AI Workout Generation Engine', () => {
   it('should generate balanced home bodyweight full-body routine', () => {
@@ -51,4 +52,35 @@ describe('AI Workout Generation Engine', () => {
       'Should include knee-friendly movement'
     );
   });
+
+  it('should generate structured 4-week progressive overload program with wave periodization', () => {
+    const program = generateHeuristicMultiWeekProgram({
+      primaryGoal: 'Muscle hypertrophy',
+      experienceLevel: 'Intermediate',
+      daysAvailable: '4 days a week - Mon, Tue, Thu, Fri',
+      equipmentAccess: 'Full commercial gym',
+      injuries: 'Bad lower back',
+      baselineFitness: 'Can bench 70kg, squat 90kg',
+    });
+
+    assert.ok(program.id, 'Program should have an ID');
+    assert.strictEqual(program.weeks.length, 4, 'Should contain 4 progressive weeks');
+    assert.ok(program.progressionRules.length > 0, 'Should outline clear progression rules');
+    assert.strictEqual(program.weeks[0].weekNumber, 1);
+    assert.strictEqual(program.weeks[3].weekNumber, 4);
+
+    // Week 4 should be deload
+    assert.ok(
+      program.weeks[3].weekFocus.toLowerCase().includes('deload') ||
+      program.weeks[3].progressionNote.toLowerCase().includes('deload'),
+      'Week 4 should be deload'
+    );
+
+    // Check injury accommodation
+    assert.ok(
+      program.injuryAccommodations.toLowerCase().includes('back'),
+      'Should protect lower back in program notes'
+    );
+  });
 });
+

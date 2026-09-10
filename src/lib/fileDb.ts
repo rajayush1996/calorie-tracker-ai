@@ -1,6 +1,6 @@
 import fs from 'fs';
 import path from 'path';
-import { UserAccount, UserProfile, DailyLog, BodyMeasurement, DietPlan, WorkoutPlan, CommunityPost } from '@/types';
+import { UserAccount, UserProfile, DailyLog, BodyMeasurement, DietPlan, WorkoutPlan, MultiWeekWorkoutProgram, CommunityPost } from '@/types';
 
 export interface FileDatabase {
   users: Record<string, UserAccount>;
@@ -9,6 +9,7 @@ export interface FileDatabase {
   measurements: Record<string, BodyMeasurement[]>;
   dietPlans: Record<string, DietPlan>;
   workoutPlans?: Record<string, WorkoutPlan>;
+  workoutPrograms?: Record<string, MultiWeekWorkoutProgram>;
   communityPosts: CommunityPost[];
 }
 
@@ -32,6 +33,7 @@ function ensureDbFile(): void {
         measurements: {},
         dietPlans: {},
         workoutPlans: {},
+        workoutPrograms: {},
         communityPosts: [],
       };
       fs.writeFileSync(DB_FILE, JSON.stringify(initialDb), 'utf-8');
@@ -50,6 +52,7 @@ export function readDb(): FileDatabase {
     const parsed = JSON.parse(raw);
     if (!parsed.communityPosts) parsed.communityPosts = [];
     if (!parsed.workoutPlans) parsed.workoutPlans = {};
+    if (!parsed.workoutPrograms) parsed.workoutPrograms = {};
     memoryDbCache = parsed;
     return parsed;
   } catch (e) {
@@ -60,6 +63,7 @@ export function readDb(): FileDatabase {
       measurements: {},
       dietPlans: {},
       workoutPlans: {},
+      workoutPrograms: {},
       communityPosts: [],
     };
     memoryDbCache = fallback;
@@ -88,6 +92,7 @@ export function getUserData(userId: string) {
     measurements: db.measurements[userId] || [],
     dietPlan: db.dietPlans[userId] || null,
     workoutPlan: db.workoutPlans?.[userId] || null,
+    workoutProgram: db.workoutPrograms?.[userId] || null,
     communityPosts: db.communityPosts || [],
   };
 }
@@ -99,6 +104,7 @@ export function saveUserData(userId: string, payload: {
   measurements?: BodyMeasurement[];
   dietPlan?: DietPlan;
   workoutPlan?: WorkoutPlan;
+  workoutProgram?: MultiWeekWorkoutProgram;
   communityPosts?: CommunityPost[];
 }) {
   const db = readDb();
@@ -111,6 +117,10 @@ export function saveUserData(userId: string, payload: {
   if (payload.workoutPlan) {
     if (!db.workoutPlans) db.workoutPlans = {};
     db.workoutPlans[userId] = payload.workoutPlan;
+  }
+  if (payload.workoutProgram) {
+    if (!db.workoutPrograms) db.workoutPrograms = {};
+    db.workoutPrograms[userId] = payload.workoutProgram;
   }
   if (payload.communityPosts) db.communityPosts = payload.communityPosts;
 
@@ -130,6 +140,7 @@ export function resetEntireDb(): void {
     measurements: {},
     dietPlans: {},
     workoutPlans: {},
+    workoutPrograms: {},
     communityPosts: [],
   };
   writeDb(initialDb);

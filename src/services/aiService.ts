@@ -1,4 +1,4 @@
-import { FoodItem, DietPlan, WorkoutPlan, DailyLog, UserProfile, DailyAudit, DietType, FitnessGoal } from '@/types';
+import { FoodItem, DietPlan, WorkoutPlan, MultiWeekWorkoutProgram, DailyLog, UserProfile, DailyAudit, DietType, FitnessGoal } from '@/types';
 
 export async function parseMealSentence(
   sentence: string,
@@ -239,6 +239,31 @@ export async function generateWorkoutPlan(params: {
   if (!res.ok) {
     const errorData = await res.json().catch(() => ({}));
     throw new Error(errorData.error || 'Failed to generate workout plan');
+  }
+
+  return res.json();
+}
+
+export async function generateMultiWeekWorkoutProgram(params: {
+  primaryGoal?: string;
+  experienceLevel?: string;
+  daysAvailable?: string;
+  equipmentAccess?: string;
+  injuries?: string;
+  baselineFitness?: string;
+  existingRoutineNotes?: string;
+  apiKey?: string;
+  provider?: string;
+}): Promise<MultiWeekWorkoutProgram & { provider?: string }> {
+  const res = await fetch('/api/ai/generate-workout-program', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(params),
+  });
+
+  if (!res.ok) {
+    const errorData = await res.json().catch(() => ({}));
+    throw new Error(errorData.error || 'Failed to generate workout program');
   }
 
   return res.json();

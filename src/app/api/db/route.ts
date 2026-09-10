@@ -25,7 +25,7 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { userId, user, profile, dailyLogs, measurements, dietPlan, workoutPlan, communityPosts } = body;
+    const { userId, user, profile, dailyLogs, measurements, dietPlan, workoutPlan, workoutProgram, communityPosts } = body;
 
     if (!userId) {
       return NextResponse.json({ error: 'userId is required' }, { status: 400 });
@@ -38,6 +38,7 @@ export async function POST(req: NextRequest) {
       measurements,
       dietPlan,
       workoutPlan,
+      workoutProgram,
       communityPosts,
     });
 

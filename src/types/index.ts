@@ -220,3 +220,63 @@ export interface WorkoutPlan {
   createdAt: string;
   provider?: string;
 }
+
+export interface ProgramExercise {
+  id: string;
+  name: string;
+  category: 'chest' | 'back' | 'legs' | 'core' | 'cardio';
+  targetMuscle: string;
+  sets: number;
+  repRange: string;
+  restSeconds: number;
+  rpeOrIntensity?: string;
+  progressionRule: string;
+  coachingTips: string[];
+  caloriesBurnEstimate: number;
+  diagramType:
+    | 'pushup'
+    | 'squat'
+    | 'pullup'
+    | 'plank'
+    | 'lunge'
+    | 'bench_press'
+    | 'crunch'
+    | 'jumping_jack'
+    | (string & {});
+}
+
+export interface ProgramTrainingDay {
+  id: string;
+  dayName: string;
+  dayTitle: string;
+  focus: string;
+  warmup: string;
+  cooldown: string;
+  estimatedDurationMinutes: number;
+  estimatedCaloriesBurn: number;
+  exercises: ProgramExercise[];
+}
+
+export interface ProgramWeek {
+  weekNumber: number;
+  weekFocus: string;
+  progressionNote: string;
+  days: ProgramTrainingDay[];
+}
+
+export interface MultiWeekWorkoutProgram {
+  id: string;
+  title: string;
+  periodizationModel: string;
+  primaryGoal: string;
+  experienceLevel: 'Beginner' | 'Intermediate' | 'Advanced';
+  daysPerWeek: string;
+  equipmentAccess: string;
+  injuryAccommodations: string;
+  baselineFitness: string;
+  coachVerdict: string;
+  progressionRules: string[];
+  weeks: ProgramWeek[];
+  createdAt: string;
+  provider?: string;
+}
