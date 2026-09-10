@@ -7,6 +7,7 @@ import {
   Utensils,
   Camera,
   Check,
+  Plus,
   AlertCircle,
   RefreshCw,
   Trash2,
@@ -59,6 +60,7 @@ export const AILoggerTab: React.FC<AILoggerTabProps> = ({
   const [refineSummary, setRefineSummary] = useState<string | null>(null);
   const [lastLoggedMeal, setLastLoggedMeal] = useState<MealLog | null>(null);
   const [isSaved, setIsSaved] = useState(false);
+  const [justLogged, setJustLogged] = useState(false);
 
   // Single direct action: Log meal internally calculates and saves in 1 step!
   const handleDirectLog = async (sentenceToUse?: string) => {
@@ -106,6 +108,10 @@ export const AILoggerTab: React.FC<AILoggerTabProps> = ({
       setInputSentence('');
       setPhotoPreview(null);
       setIsSaved(true);
+      setJustLogged(true);
+      setTimeout(() => {
+        setJustLogged(false);
+      }, 3500);
     } catch (err: any) {
       setErrorMessage(err.message || 'Failed to log meal');
     } finally {
@@ -157,6 +163,10 @@ export const AILoggerTab: React.FC<AILoggerTabProps> = ({
         setAssumptions(res.assumptions || []);
         setPhotoPreview(null);
         setIsSaved(true);
+        setJustLogged(true);
+        setTimeout(() => {
+          setJustLogged(false);
+        }, 3500);
       } catch (err: any) {
         setErrorMessage(err.message || 'Failed to analyze plate photo');
       } finally {
@@ -379,13 +389,16 @@ export const AILoggerTab: React.FC<AILoggerTabProps> = ({
         )}
 
         {/* Input Text Box with Camera Trigger */}
-        <div className="mt-3 relative">
+        <div className="mt-3">
           <textarea
             value={inputSentence}
-            onChange={(e) => setInputSentence(e.target.value)}
+            onChange={(e) => {
+              setInputSentence(e.target.value);
+              if (justLogged) setJustLogged(false);
+            }}
             placeholder="e.g., 2 parathas with curd and 1 cup chai..."
             rows={3}
-            className="w-full p-3.5 pb-10 text-sm rounded-2xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 resize-none transition-all"
+            className="w-full p-3.5 text-sm rounded-2xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 resize-none transition-all"
           />
 
           {/* Hidden File Input for Camera OCR */}
@@ -398,41 +411,55 @@ export const AILoggerTab: React.FC<AILoggerTabProps> = ({
             onChange={handlePhotoCapture}
           />
 
-          {/* Action Bar inside/below input */}
-          <div className="flex items-center justify-between mt-1 px-1">
+          {/* Action Bar: Symmetric, Matched Height (h-11), Consistent Styling */}
+          <div className="grid grid-cols-2 gap-2.5 mt-2.5">
+            {/* Snap Plate Photo Button */}
             <button
               type="button"
               onClick={() => fileInputRef.current?.click()}
-              disabled={isAnalyzingPhoto}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold text-xs transition-colors"
+              disabled={isAnalyzingPhoto || isLoading}
+              className="h-11 px-3 rounded-2xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800/80 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-bold text-xs flex items-center justify-center gap-2 border border-slate-200/60 dark:border-slate-700/60 transition-all active:scale-98 disabled:opacity-50"
               title="Snap photo of plate"
             >
               {isAnalyzingPhoto ? (
                 <>
-                  <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-                  Analyzing Plate...
+                  <RefreshCw className="w-4 h-4 animate-spin text-emerald-500" />
+                  <span>Analyzing...</span>
                 </>
               ) : (
                 <>
-                  <Camera className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
-                  <span>Snap Plate Photo</span>
+                  <Camera className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                  <span>Snap Photo</span>
                 </>
               )}
             </button>
 
+            {/* Log Meal Button */}
             <button
+              type="button"
               onClick={() => handleDirectLog()}
-              disabled={isLoading || !inputSentence.trim()}
-              className="inline-flex items-center justify-center gap-1.5 px-5 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white font-black text-xs shadow-md active:scale-98 disabled:opacity-50 disabled:pointer-events-none transition-all"
+              disabled={isLoading || isAnalyzingPhoto || (!inputSentence.trim() && !justLogged)}
+              className={`h-11 px-4 rounded-2xl font-bold text-xs flex items-center justify-center gap-2 transition-all active:scale-98 ${
+                justLogged
+                  ? 'bg-emerald-600 text-white shadow-xs'
+                  : inputSentence.trim()
+                  ? 'bg-emerald-500 hover:bg-emerald-600 text-white shadow-xs'
+                  : 'bg-slate-100 dark:bg-slate-800/80 text-slate-400 dark:text-slate-500 border border-slate-200/50 dark:border-slate-800 cursor-not-allowed'
+              }`}
             >
               {isLoading ? (
                 <>
-                  <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-                  Logging Meal...
+                  <RefreshCw className="w-4 h-4 animate-spin" />
+                  <span>Logging Meal...</span>
+                </>
+              ) : justLogged ? (
+                <>
+                  <Check className="w-4 h-4 stroke-[3]" />
+                  <span>Logged to Journal!</span>
                 </>
               ) : (
                 <>
-                  <Check className="w-3.5 h-3.5 stroke-[2.5]" />
+                  <Plus className="w-4 h-4 stroke-[2.5]" />
                   <span>Log Meal</span>
                 </>
               )}
@@ -619,7 +646,7 @@ export const AILoggerTab: React.FC<AILoggerTabProps> = ({
       )}
 
       {/* Discreet Sectional Reset Button */}
-      {(inputSentence || parsedItems.length > 0 || photoPreview) && (
+      {(inputSentence || (!lastLoggedMeal && parsedItems.length > 0) || photoPreview) && (
         <div className="text-center pt-2">
           <button
             type="button"
