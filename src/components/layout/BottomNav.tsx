@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Home, Sparkles, UtensilsCrossed, TrendingUp, Users } from 'lucide-react';
+import { Home, Plus, UtensilsCrossed, TrendingUp, Users } from 'lucide-react';
 
 export type ActiveTab = 'dashboard' | 'logger' | 'diet' | 'analytics' | 'community' | 'audit' | 'profile';
 
@@ -14,7 +14,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({ activeTab, onChangeTab }) 
   const tabs = [
     { id: 'dashboard' as const, label: 'Today', icon: Home },
     { id: 'diet' as const, label: 'Diet Plan', icon: UtensilsCrossed },
-    { id: 'logger' as const, label: 'Log Food', icon: Sparkles, isHighlight: true },
+    { id: 'logger' as const, label: 'Log Food', icon: Plus, isHighlight: true },
     { id: 'analytics' as const, label: 'Journey', icon: TrendingUp },
     { id: 'community' as const, label: 'Community', icon: Users },
   ];
@@ -34,13 +34,13 @@ export const BottomNav: React.FC<BottomNavProps> = ({ activeTab, onChangeTab }) 
                 className="relative -top-4 flex flex-col items-center group focus:outline-none"
               >
                 <div
-                  className={`w-13 h-13 rounded-2xl flex items-center justify-center shadow-lg transition-transform active:scale-95 ${
+                  className={`w-12 h-12 rounded-2xl flex items-center justify-center shadow-lg transition-transform active:scale-95 ${
                     isActive
-                      ? 'bg-gradient-to-tr from-emerald-600 to-teal-500 text-white shadow-emerald-500/30 scale-105'
-                      : 'bg-gradient-to-tr from-emerald-500 to-teal-400 text-white shadow-emerald-500/25 group-hover:scale-105'
+                      ? 'bg-emerald-600 text-white shadow-emerald-500/30 scale-105'
+                      : 'bg-emerald-500 hover:bg-emerald-600 text-white shadow-emerald-500/25 group-hover:scale-105'
                   }`}
                 >
-                  <Sparkles className="w-6 h-6 animate-pulse" />
+                  <Plus className="w-6 h-6 stroke-[2.5]" />
                 </div>
                 <span
                   className={`text-[11px] font-bold mt-1 transition-colors ${

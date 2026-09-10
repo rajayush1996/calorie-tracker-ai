@@ -402,12 +402,11 @@ export default function Home() {
                 onUpdateWater={handleUpdateWater}
               />
 
-              {/* Quick AI Assistants - Simple & Catchy */}
+              {/* Quick Helpers */}
               <div className="pt-1">
                 <div className="flex items-center justify-between px-1 mb-2">
-                  <span className="text-xs font-black text-slate-900 dark:text-white flex items-center gap-1.5">
-                    <Sparkles className="w-3.5 h-3.5 text-emerald-500" />
-                    AI Health Toolkit
+                  <span className="text-xs font-black text-slate-900 dark:text-white">
+                    Quick Helpers
                   </span>
                   <span className="text-[10px] text-slate-400 font-medium">1-tap solutions</span>
                 </div>

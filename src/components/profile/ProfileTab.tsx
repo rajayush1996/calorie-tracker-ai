@@ -149,32 +149,31 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({
       <div className="bg-white dark:bg-slate-900 rounded-3xl p-5 border border-slate-100 dark:border-slate-800 shadow-xs">
         <div className="flex items-center gap-2 text-slate-900 dark:text-white font-bold text-sm mb-1">
           <User className="w-4 h-4 text-emerald-500" />
-          <span>Profile & Target Calorie Engine</span>
+          <span>Profile & Daily Targets</span>
         </div>
         <h2 className="text-xl font-black text-slate-900 dark:text-white tracking-tight">
           Personal Metrics & Goals
         </h2>
         <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-          Scientific metabolic calculations calibrated to your exact goal (fat loss deficit, muscle gain surplus, bulking, or maintenance).
+          Your daily calorie and macronutrient targets calibrated to your fitness goal.
         </p>
 
-        {/* Live AI Metabolic Engine Card */}
-        <div className="mt-4 p-4 rounded-2xl bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-emerald-950/30 dark:to-teal-950/20 border border-emerald-100 dark:border-emerald-900/40 space-y-3">
+        {/* Live Daily Target Card */}
+        <div className="mt-4 p-4 rounded-2xl bg-emerald-50/60 dark:bg-emerald-950/30 border border-emerald-100 dark:border-emerald-900/40 space-y-3">
           <div className="flex items-center justify-between">
             <span className="text-xs font-bold text-emerald-800 dark:text-emerald-300 flex items-center gap-1.5">
-              <Calculator className="w-3.5 h-3.5" />
-              Calculated Energy Needs
+              <Calculator className="w-3.5 h-3.5 text-emerald-600" />
+              Daily Calorie Target
             </span>
-            <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-700 dark:text-emerald-300 bg-white/90 dark:bg-slate-900/90 px-2.5 py-0.5 rounded-full border border-emerald-200/80 dark:border-emerald-800/60 shadow-2xs">
-              <Sparkles className="w-3 h-3 text-emerald-500" />
-              AI Calibrated
+            <span className="text-[11px] font-bold text-emerald-700 dark:text-emerald-300 bg-white/90 dark:bg-slate-900/90 px-2.5 py-0.5 rounded-full border border-emerald-200/80 dark:border-emerald-800/60 shadow-2xs">
+              Recommended
             </span>
           </div>
 
           <div className="grid grid-cols-3 gap-2 text-xs">
             <div>
               <span className="text-slate-500 dark:text-slate-400 block text-[11px]">
-                BMR:
+                Base Energy:
               </span>
               <strong className="text-sm font-black text-slate-800 dark:text-slate-200">
                 {preview.bmr} kcal
@@ -182,7 +181,7 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({
             </div>
             <div>
               <span className="text-slate-500 dark:text-slate-400 block text-[11px]">
-                TDEE:
+                Daily Burn:
               </span>
               <strong className="text-sm font-black text-slate-800 dark:text-slate-200">
                 {preview.tdee} kcal
@@ -206,8 +205,7 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({
           </div>
 
           <div className="pt-2 border-t border-emerald-100/80 dark:border-emerald-900/40 text-[11px] text-emerald-800 dark:text-emerald-300 flex items-center gap-1.5">
-            <span>✨</span>
-            <span className="font-medium">{preview.explanation}</span>
+            <span className="font-medium">{preview.explanation.replace(/Blueprint:|AI /gi, '').trim()}</span>
           </div>
         </div>
 
