@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import React, { useState } from 'react';
 import { MealType, MealLog } from '@/types';
@@ -15,6 +15,11 @@ const MEAL_CONFIG: Record<MealType, { label: string; icon: string; subtitle: str
   lunch: { label: 'Lunch', icon: '☀️', subtitle: 'Midday nutrition' },
   snack: { label: 'Snacks', icon: '🍎', subtitle: 'Energy boosts' },
   dinner: { label: 'Dinner', icon: '🌆', subtitle: 'Evening recovery' },
+  meal_1: { label: 'Meal 1', icon: '🌅', subtitle: 'First meal / brunch' },
+  meal_2: { label: 'Meal 2', icon: '☀️', subtitle: 'Midday nutrition' },
+  meal_3: { label: 'Meal 3', icon: '🌆', subtitle: 'Evening recovery' },
+  meal_4: { label: 'Meal 4', icon: '🌙', subtitle: 'Night sustenance' },
+  meal_5: { label: 'Meal 5', icon: '✨', subtitle: 'Additional fuel' },
 };
 
 export const MealSection: React.FC<MealSectionProps> = ({
@@ -24,7 +29,11 @@ export const MealSection: React.FC<MealSectionProps> = ({
 }) => {
   const [expandedMeal, setExpandedMeal] = useState<MealType | null>(null);
 
-  const mealTypes: MealType[] = ['breakfast', 'lunch', 'snack', 'dinner'];
+  const loggedTypes = Array.from(new Set(meals.map((m) => m.mealType)));
+  const hasNumberedMeals = loggedTypes.some((t) => t.startsWith('meal_'));
+  const mealTypes: MealType[] = hasNumberedMeals
+    ? Array.from(new Set([...loggedTypes, 'meal_1', 'meal_2', 'meal_3', 'snack']))
+    : ['breakfast', 'lunch', 'snack', 'dinner'];
   const totalMealsLogged = meals.length;
 
   return (

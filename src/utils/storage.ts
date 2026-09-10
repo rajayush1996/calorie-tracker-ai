@@ -1,4 +1,7 @@
 import { UserProfile, DailyLog, BodyMeasurement, DietPlan, MealLog, UserAccount, CommunityPost } from '@/types';
+import { calculateTargets } from './nutritionCalculations';
+
+const defaultTargets = calculateTargets(78, 175, 24, 'male', 'moderate', 'fat_loss', 'recommended', 'veg', 70);
 
 export const DEFAULT_PROFILE: UserProfile = {
   userId: 'user_demo_123',
@@ -12,12 +15,13 @@ export const DEFAULT_PROFILE: UserProfile = {
   chestCm: 98,
   activityLevel: 'moderate',
   goal: 'fat_loss',
+  dietType: 'veg',
   pace: 'recommended',
-  targetCalories: 1850,
-  targetProteinG: 156,
-  targetCarbsG: 185,
-  targetFatG: 51,
-  waterTargetMl: 2800,
+  targetCalories: defaultTargets.targetCalories,
+  targetProteinG: defaultTargets.targetProteinG,
+  targetCarbsG: defaultTargets.targetCarbsG,
+  targetFatG: defaultTargets.targetFatG,
+  waterTargetMl: defaultTargets.waterTargetMl,
   isOnboarded: true,
   apiKey: '',
 };

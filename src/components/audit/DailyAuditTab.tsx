@@ -61,23 +61,23 @@ export const DailyAuditTab: React.FC<DailyAuditTabProps> = ({
         <div className="flex items-center justify-between gap-2 mb-1">
           <div className="flex items-center gap-2 text-indigo-600 dark:text-indigo-400 font-bold text-sm">
             <Moon className="w-4 h-4" />
-            <span>Daily AI Nutritional Audit</span>
+            <span>Daily Review</span>
           </div>
           <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300">
             {dateLabel}
           </span>
         </div>
         <h2 className="text-xl font-black text-slate-900 dark:text-white tracking-tight">
-          Review & Mistake Analyzer
+          Daily Review & Feedback
         </h2>
         <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-          The AI analyzes everything you logged on <strong>{dateLabel}</strong>, detects macro drift, celebrates wins, and provides an actionable game plan.
+          Review your logged nutrition for <strong>{dateLabel}</strong>, see how close you got to your targets, and get coaching tips for tomorrow.
         </p>
 
         {currentAudit && (
           <div className="flex items-center gap-1.5 text-[11px] font-bold text-emerald-600 dark:text-emerald-400 mt-3 bg-emerald-50 dark:bg-emerald-950/40 px-3 py-1.5 rounded-xl border border-emerald-200/50 dark:border-emerald-800/40">
             <CheckCircle2 className="w-3.5 h-3.5 shrink-0" />
-            <span>AI Report Preserved for {dateLabel} • Score: {currentAudit.scoreOutOf10}/10</span>
+            <span>Day Score: {currentAudit.scoreOutOf10}/10 • Feedback Preserved for {dateLabel}</span>
           </div>
         )}
 
@@ -116,17 +116,17 @@ export const DailyAuditTab: React.FC<DailyAuditTabProps> = ({
         <button
           onClick={handleRunAudit}
           disabled={isLoading}
-          className="w-full mt-2 py-3 rounded-2xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-bold text-xs shadow-md shadow-indigo-500/20 flex items-center justify-center gap-2 active:scale-98 disabled:opacity-50 transition-all"
+          className="w-full mt-2 py-3 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs shadow-md shadow-indigo-500/20 flex items-center justify-center gap-2 active:scale-98 disabled:opacity-50 transition-all"
         >
           {isLoading ? (
             <>
               <RefreshCw className="w-4 h-4 animate-spin" />
-              Auditing {dateLabel}&apos;s Nutrition...
+              Generating Daily Review...
             </>
           ) : (
             <>
-              <Sparkles className="w-4 h-4" />
-              {currentAudit ? `Re-Analyze ${dateLabel} with AI` : `Run AI Audit for ${dateLabel}`}
+              <Moon className="w-4 h-4" />
+              {currentAudit ? 'Re-run Daily Review' : 'Review Today\'s Nutrition'}
             </>
           )}
         </button>

@@ -13,8 +13,8 @@ interface BottomNavProps {
 export const BottomNav: React.FC<BottomNavProps> = ({ activeTab, onChangeTab }) => {
   const tabs = [
     { id: 'dashboard' as const, label: 'Today', icon: Home },
-    { id: 'diet' as const, label: 'AI Diet', icon: UtensilsCrossed },
-    { id: 'logger' as const, label: 'AI Log', icon: Sparkles, isHighlight: true },
+    { id: 'diet' as const, label: 'Diet Plan', icon: UtensilsCrossed },
+    { id: 'logger' as const, label: 'Log Food', icon: Sparkles, isHighlight: true },
     { id: 'analytics' as const, label: 'Journey', icon: TrendingUp },
     { id: 'community' as const, label: 'Community', icon: Users },
   ];

@@ -3,7 +3,16 @@ export type ActivityLevel = 'sedentary' | 'light' | 'moderate' | 'active' | 'ver
 export type FitnessGoal = 'fat_loss' | 'muscle_gain' | 'weight_gain' | 'maintenance';
 export type TransformationPace = 'sustainable' | 'recommended' | 'aggressive' | 'muscle_gain';
 export type DietType = 'veg' | 'non_veg' | 'eggetarian' | 'vegan' | 'jain' | 'keto';
-export type MealType = 'breakfast' | 'lunch' | 'dinner' | 'snack';
+export type MealType =
+  | 'breakfast'
+  | 'lunch'
+  | 'dinner'
+  | 'snack'
+  | 'meal_1'
+  | 'meal_2'
+  | 'meal_3'
+  | 'meal_4'
+  | 'meal_5';
 
 export interface UserAccount {
   id: string;
@@ -33,6 +42,8 @@ export interface UserProfile {
   targetFatG: number;
   waterTargetMl: number;
   targetDate?: string;
+  wakeUpTime?: string; // e.g. '11:00 AM' or '07:30 AM'
+  mealNamingStyle?: 'lifestyle' | 'numbered' | 'standard';
   isOnboarded: boolean;
   apiKey?: string;
   aiProvider?: 'openai' | 'gemini' | 'claude' | 'groq';
@@ -159,4 +170,25 @@ export interface CommunityPost {
   isLiked?: boolean;
   comments: CommunityComment[];
   createdAt: string;
+}
+
+export interface ExerciseItem {
+  id: string;
+  name: string;
+  category: 'chest' | 'back' | 'legs' | 'core' | 'cardio';
+  targetMuscle: string;
+  recommendedSets: string;
+  repsOrDuration: string;
+  difficulty: 'Beginner' | 'Intermediate' | 'Advanced';
+  coachingTips: string[];
+  caloriesBurnEstimate: number;
+  diagramType:
+    | 'pushup'
+    | 'squat'
+    | 'pullup'
+    | 'plank'
+    | 'lunge'
+    | 'bench_press'
+    | 'crunch'
+    | 'jumping_jack';
 }

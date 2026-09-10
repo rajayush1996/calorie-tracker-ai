@@ -127,13 +127,13 @@ export const DaySummaryCard: React.FC<DaySummaryCardProps> = ({
         </div>
       </div>
 
-      {/* Preserved AI Audit Section for this Date */}
+      {/* Preserved Daily Review Section for this Date */}
       {dailyLog.audit ? (
         <div className="p-3 rounded-2xl bg-indigo-50/80 dark:bg-indigo-950/40 border border-indigo-100 dark:border-indigo-900/40 space-y-1.5">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-1.5 text-xs font-black text-indigo-950 dark:text-indigo-200">
               <Sparkles className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400 shrink-0" />
-              <span>AI Day Audit Preserved • {dailyLog.audit.scoreOutOf10}/10 Score</span>
+              <span>Day Score: {dailyLog.audit.scoreOutOf10}/10 • Feedback Preserved</span>
             </div>
             {onOpenAudit && (
               <button
@@ -141,7 +141,7 @@ export const DaySummaryCard: React.FC<DaySummaryCardProps> = ({
                 onClick={onOpenAudit}
                 className="text-[10px] font-bold text-indigo-600 dark:text-indigo-400 hover:underline"
               >
-                View Full Breakdown ➔
+                View Feedback ➔
               </button>
             )}
           </div>
@@ -159,14 +159,14 @@ export const DaySummaryCard: React.FC<DaySummaryCardProps> = ({
         <div className="p-2.5 rounded-2xl bg-indigo-50/40 dark:bg-indigo-950/20 border border-indigo-100/60 dark:border-indigo-900/30 flex items-center justify-between">
           <div className="flex items-center gap-1.5 text-xs text-slate-600 dark:text-slate-400">
             <Sparkles className="w-3.5 h-3.5 text-indigo-500" />
-            <span>Ready for AI end-of-day audit?</span>
+            <span>Ready for your daily review?</span>
           </div>
           <button
             type="button"
             onClick={onOpenAudit}
             className="px-2.5 py-1 rounded-xl bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 font-bold text-[11px] transition-colors"
           >
-            Audit with AI
+            Review Day
           </button>
         </div>
       ) : null}

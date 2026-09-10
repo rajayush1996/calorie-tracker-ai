@@ -13,6 +13,7 @@ import {
   saveBodyMeasurements,
   restoreFromFileDb,
   resetAppToCleanSlate,
+  DEFAULT_PROFILE,
 } from '@/utils/storage';
 import {
   getActiveUser,
@@ -25,6 +26,8 @@ import { AppOnboardingCarousel } from '@/components/auth/AppOnboardingCarousel';
 import { AuthScreen } from '@/components/auth/AuthScreen';
 import { OnboardingWizard } from '@/components/onboarding/OnboardingWizard';
 import { Header } from '@/components/layout/Header';
+import { HeaderDrawer } from '@/components/layout/HeaderDrawer';
+import { ExerciseGuideModal } from '@/components/exercise/ExerciseGuideModal';
 import { BottomNav, ActiveTab } from '@/components/layout/BottomNav';
 import { CalorieRing } from '@/components/dashboard/CalorieRing';
 import { WaterTracker } from '@/components/dashboard/WaterTracker';
@@ -40,7 +43,7 @@ import { PwaInstallPrompt } from '@/components/common/PwaInstallPrompt';
 import { DateNavigator } from '@/components/common/DateNavigator';
 import { DaySummaryCard } from '@/components/dashboard/DaySummaryCard';
 import { getTodayDateString } from '@/utils/dateUtils';
-import { Sparkles } from 'lucide-react';
+import { Sparkles, RotateCcw } from 'lucide-react';
 
 export default function Home() {
   const [currentUser, setCurrentUser] = useState<UserAccount | null>(null);
@@ -56,6 +59,9 @@ export default function Home() {
   const [rescueInitialTab, setRescueInitialTab] = useState<'craving' | 'cheat'>('craving');
   const [showAuthForm, setShowAuthForm] = useState(false);
   const [isClient, setIsClient] = useState(false);
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const [isExerciseModalOpen, setIsExerciseModalOpen] = useState(false);
+  const [dietTabMode, setDietTabMode] = useState<'pantry' | 'upload'>('pantry');
 
   // Initialize Auth & Theme
   useEffect(() => {
@@ -175,23 +181,9 @@ export default function Home() {
       <OnboardingWizard
         initialProfile={
           userProfile || {
+            ...DEFAULT_PROFILE,
             userId: currentUser.id,
             name: currentUser.name,
-            age: 24,
-            gender: 'male',
-            heightCm: 172,
-            currentWeightKg: 78,
-            targetWeightKg: 70,
-            waistCm: 86,
-            chestCm: 98,
-            activityLevel: 'moderate',
-            goal: 'fat_loss',
-            pace: 'recommended',
-            targetCalories: 1850,
-            targetProteinG: 150,
-            targetCarbsG: 185,
-            targetFatG: 50,
-            waterTargetMl: 2800,
             isOnboarded: false,
           }
         }
@@ -366,12 +358,13 @@ export default function Home() {
     <div className="min-h-screen bg-slate-100 dark:bg-slate-950 text-slate-900 dark:text-white flex justify-center selection:bg-emerald-500 selection:text-white transition-colors duration-200">
       {/* Mobile-first app container */}
       <div className="w-full max-w-md min-h-screen bg-slate-50 dark:bg-slate-950 flex flex-col shadow-2xl relative border-x border-slate-200/60 dark:border-slate-800/60 transition-colors">
-        {/* Sticky Header with Light/Dark toggle & Logout */}
+        {/* Sticky Header with Light/Dark toggle, Streak & Hamburger Menu */}
         <Header
           user={currentUser}
           theme={theme}
           streakDays={Math.max(1, Object.keys(allLogs).length)}
           onToggleTheme={handleToggleTheme}
+          onOpenMenu={() => setIsDrawerOpen(true)}
           onOpenProfile={() => setActiveTab('profile')}
           onLogout={handleLogout}
         />
@@ -456,12 +449,26 @@ export default function Home() {
                   >
                     <span className="text-xl block mb-1 group-hover:scale-110 transition-transform">🌙</span>
                     <strong className="text-xs font-bold text-purple-900 dark:text-purple-200 block leading-tight">
-                      Day Audit
+                      Daily Review
                     </strong>
-                    <span className="text-[9px] text-purple-700/70 dark:text-purple-400/80">Nightly grade</span>
+                    <span className="text-[9px] text-purple-700/70 dark:text-purple-400/80">Coach feedback</span>
                   </button>
                 </div>
               </div>
+
+              {/* Discreet Sectional Reset Button */}
+              {activeLog.meals && activeLog.meals.length > 0 && (
+                <div className="text-center pt-2">
+                  <button
+                    type="button"
+                    onClick={handleResetMeals}
+                    className="text-[11px] text-slate-400 hover:text-rose-500 underline inline-flex items-center gap-1 transition-colors"
+                  >
+                    <RotateCcw className="w-3 h-3" />
+                    <span>Clear today&apos;s logged meals</span>
+                  </button>
+                </div>
+              )}
             </div>
           )}
 
@@ -483,6 +490,7 @@ export default function Home() {
             <DietPlannerTab
               userProfile={userProfile}
               onLogMealDirectly={handleSaveMeal}
+              defaultMode={dietTabMode}
             />
           )}
 
@@ -537,6 +545,30 @@ export default function Home() {
 
         {/* Mobile Bottom Navigation */}
         <BottomNav activeTab={activeTab} onChangeTab={setActiveTab} />
+
+        {/* Slide-out Hamburger Drawer */}
+        <HeaderDrawer
+          isOpen={isDrawerOpen}
+          onClose={() => setIsDrawerOpen(false)}
+          user={currentUser || undefined}
+          theme={theme}
+          streakDays={Math.max(1, Object.keys(allLogs).length)}
+          onToggleTheme={handleToggleTheme}
+          onOpenExerciseGuide={() => setIsExerciseModalOpen(true)}
+          onOpenUploadDiet={() => {
+            setDietTabMode('upload');
+            setActiveTab('diet');
+          }}
+          onOpenProfile={() => setActiveTab('profile')}
+          onOpenResetCenter={() => setActiveTab('profile')}
+          onLogout={handleLogout}
+        />
+
+        {/* Exercise & Form Guide Modal */}
+        <ExerciseGuideModal
+          isOpen={isExerciseModalOpen}
+          onClose={() => setIsExerciseModalOpen(false)}
+        />
       </div>
     </div>
   );

@@ -178,3 +178,44 @@ export async function verifyTargetsWithAI(params: {
 
   return res.json();
 }
+
+export async function parseMealImage(
+  imageBase64: string,
+  apiKey?: string,
+  provider?: string
+): Promise<{ items: FoodItem[]; assumptions: string[]; plateSummary: string; provider?: string }> {
+  const res = await fetch('/api/ai/parse-meal-image', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ imageBase64, apiKey, provider }),
+  });
+
+  if (!res.ok) {
+    const errorData = await res.json().catch(() => ({}));
+    throw new Error(errorData.error || 'Failed to analyze meal photo');
+  }
+
+  return res.json();
+}
+
+export async function parseDietDocument(params: {
+  fileText: string;
+  fileName?: string;
+  targetCalories?: number;
+  targetProteinG?: number;
+  apiKey?: string;
+  provider?: string;
+}): Promise<DietPlan> {
+  const res = await fetch('/api/ai/parse-diet-doc', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(params),
+  });
+
+  if (!res.ok) {
+    const errorData = await res.json().catch(() => ({}));
+    throw new Error(errorData.error || 'Failed to parse diet document');
+  }
+
+  return res.json();
+}

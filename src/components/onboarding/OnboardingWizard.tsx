@@ -10,8 +10,7 @@ import {
   PACE_CONFIG,
   GOAL_PACES,
 } from '@/utils/nutritionCalculations';
-import { verifyTargetsWithAI } from '@/services/aiService';
-import { Sparkles, ArrowRight, ArrowLeft, Check, Target, Flame, Scale, Ruler, RefreshCw } from 'lucide-react';
+import { Sparkles, ArrowRight, ArrowLeft, Check, Target, Flame, Scale, Ruler } from 'lucide-react';
 
 interface OnboardingWizardProps {
   initialProfile: UserProfile;
@@ -46,19 +45,6 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = ({
   );
   const [pace, setPace] = useState<TransformationPace>(initialProfile.pace || 'recommended');
 
-  const [isVerifyingAI, setIsVerifyingAI] = useState(false);
-  const [aiResult, setAiResult] = useState<{
-    targetCalories: number;
-    targetProteinG: number;
-    targetCarbsG: number;
-    targetFatG: number;
-    waterTargetMl: number;
-    aiExplanation: string;
-    weeklyRateKg: number;
-    confidence: string;
-    provider?: string;
-  } | null>(null);
-
   // Normalized numbers for calculations
   const numCurrentWeight = Number(currentWeightKg) || 75;
   const numTargetWeight = Number(targetWeightKg) || 70;
@@ -67,7 +53,6 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = ({
 
   const handleGoalSelect = (selectedGoal: FitnessGoal) => {
     setGoal(selectedGoal);
-    setAiResult(null); // Reset calibrated AI targets if goal changes
     if (selectedGoal === 'fat_loss') {
       if (numTargetWeight >= numCurrentWeight) {
         setTargetWeightKg(Math.max(30, Number((numCurrentWeight - 5).toFixed(1))));
@@ -85,50 +70,18 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = ({
     }
   };
 
-  const calculatedTargets = calculateTargets(
+  // Internal AI Metabolic Engine automatically calculates accurate calories & macros
+  const activeTargets = calculateTargets(
     numCurrentWeight,
     numHeight,
     numAge,
     gender,
     activityLevel,
     goal,
-    pace
+    pace,
+    dietType,
+    numTargetWeight
   );
-
-  const activeTargets = aiResult
-    ? {
-        targetCalories: aiResult.targetCalories,
-        targetProteinG: aiResult.targetProteinG,
-        targetCarbsG: aiResult.targetCarbsG,
-        targetFatG: aiResult.targetFatG,
-        waterTargetMl: aiResult.waterTargetMl,
-        tdee: calculatedTargets.tdee,
-      }
-    : calculatedTargets;
-
-  const handleVerifyWithAI = async () => {
-    setIsVerifyingAI(true);
-    try {
-      const res = await verifyTargetsWithAI({
-        age: numAge,
-        gender,
-        heightCm: numHeight,
-        currentWeightKg: numCurrentWeight,
-        targetWeightKg: numTargetWeight,
-        activityLevel,
-        goal,
-        dietType,
-        pace,
-        apiKey: initialProfile.apiKey,
-        provider: initialProfile.aiProvider,
-      });
-      setAiResult(res);
-    } catch (err) {
-      console.warn('AI target verification error in onboarding:', err);
-    } finally {
-      setIsVerifyingAI(false);
-    }
-  };
 
   const bmi = calculateBMI(numCurrentWeight, numHeight);
   const targetBmi = calculateBMI(numTargetWeight, numHeight);
@@ -275,7 +228,6 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = ({
                       type="button"
                       onClick={() => {
                         setDietType(d.id);
-                        setAiResult(null);
                       }}
                       className={`py-2 px-2 text-xs font-bold rounded-xl border text-center transition-all ${
                         dietType === d.id
@@ -617,39 +569,17 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = ({
               </div>
             </div>
 
-            {/* AI Calibration Card */}
-            <div className="p-3.5 rounded-2xl bg-indigo-50/90 dark:bg-indigo-950/40 border border-indigo-200/70 dark:border-indigo-800/50 space-y-2">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-1.5">
-                  <Sparkles className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
-                  <span className="text-xs font-black text-indigo-950 dark:text-indigo-200">
-                    AI Metabolic Calibration
+            {/* Automatic AI Calibration Info */}
+            <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200/80 dark:border-slate-800 flex items-center justify-between text-xs">
+              <div className="flex items-center gap-2">
+                <Sparkles className="w-4 h-4 text-emerald-500 shrink-0" />
+                <div>
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">AI Calibrated Strategy</span>
+                  <span className="text-xs font-bold text-slate-800 dark:text-slate-200">
+                    {activeTargets.explanation}
                   </span>
                 </div>
-                <button
-                  type="button"
-                  disabled={isVerifyingAI}
-                  onClick={handleVerifyWithAI}
-                  className="px-2.5 py-1 text-[11px] font-bold rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white flex items-center gap-1 transition-all disabled:opacity-50"
-                >
-                  <RefreshCw className={`w-3 h-3 ${isVerifyingAI ? 'animate-spin' : ''}`} />
-                  <span>{isVerifyingAI ? 'Analyzing...' : aiResult ? 'Recalibrate' : 'Verify with AI'}</span>
-                </button>
               </div>
-
-              {aiResult ? (
-                <div className="text-[11px] text-indigo-900/90 dark:text-indigo-300 space-y-1">
-                  <p className="font-medium leading-relaxed">{aiResult.aiExplanation}</p>
-                  <div className="flex items-center gap-2 pt-1 font-bold text-[10px] text-emerald-600 dark:text-emerald-400">
-                    <span>✓ Targets calibrated for {dietType.toUpperCase()} + {goal.replace('_', ' ').toUpperCase()}</span>
-                    {aiResult.provider && <span className="text-slate-400">• via {aiResult.provider}</span>}
-                  </div>
-                </div>
-              ) : (
-                <p className="text-[11px] text-indigo-900/80 dark:text-indigo-300/80 leading-snug">
-                  Click to calibrate your protein and calories with AI for your <strong>{dietType.toUpperCase()}</strong> diet & <strong>{goal.replace('_', ' ')}</strong> goal.
-                </p>
-              )}
             </div>
 
             {/* Journey Milestone Banner */}

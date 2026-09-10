@@ -3,8 +3,7 @@
 import React, { useState } from 'react';
 import { UserProfile, Gender, ActivityLevel, FitnessGoal, TransformationPace, DietType } from '@/types';
 import { calculateTargets, ACTIVITY_LABELS, GOAL_PACES } from '@/utils/nutritionCalculations';
-import { verifyTargetsWithAI } from '@/services/aiService';
-import { User, Check, Calculator, Sparkles, RefreshCw, RotateCcw, Trash2, AlertTriangle, LogOut } from 'lucide-react';
+import { User, Check, Calculator, Sparkles, RotateCcw, Trash2, LogOut } from 'lucide-react';
 
 interface ProfileTabProps {
   userProfile: UserProfile;
@@ -46,29 +45,37 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({
   onLogout,
   onFreshStart,
 }) => {
-  const [formData, setFormData] = useState<ProfileFormData>({
-    ...userProfile,
-    dietType: userProfile.dietType || 'veg',
+  const [formData, setFormData] = useState<ProfileFormData>(() => {
+    const diet = userProfile.dietType || 'veg';
+    const computed = calculateTargets(
+      userProfile.currentWeightKg || 75,
+      userProfile.heightCm || 170,
+      userProfile.age || 25,
+      userProfile.gender || 'male',
+      userProfile.activityLevel || 'moderate',
+      userProfile.goal || 'fat_loss',
+      userProfile.pace || 'recommended',
+      diet,
+      userProfile.targetWeightKg || undefined
+    );
+    return {
+      ...userProfile,
+      dietType: diet,
+      targetCalories: userProfile.targetCalories || computed.targetCalories,
+      targetProteinG: userProfile.targetProteinG || computed.targetProteinG,
+      targetCarbsG: userProfile.targetCarbsG || computed.targetCarbsG,
+      targetFatG: userProfile.targetFatG || computed.targetFatG,
+      waterTargetMl: userProfile.waterTargetMl || computed.waterTargetMl,
+    };
   });
+
   const [isSaved, setIsSaved] = useState(false);
-  const [isVerifyingAI, setIsVerifyingAI] = useState(false);
-  const [aiResult, setAiResult] = useState<{
-    targetCalories: number;
-    targetProteinG: number;
-    targetCarbsG: number;
-    targetFatG: number;
-    waterTargetMl: number;
-    aiExplanation: string;
-    weeklyRateKg: number;
-    confidence: string;
-    provider?: string;
-  } | null>(null);
   const [showResetConfirm, setShowResetConfirm] = useState(false);
   const [showRestartConfirm, setShowRestartConfirm] = useState(false);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const [showFreshStartConfirm, setShowFreshStartConfirm] = useState(false);
 
-  // Live recalculate preview safely
+  // Live recalculate preview with all parameters
   const preview = calculateTargets(
     Number(formData.currentWeightKg) || userProfile.currentWeightKg || 75,
     Number(formData.heightCm) || userProfile.heightCm || 170,
@@ -76,55 +83,45 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({
     formData.gender,
     formData.activityLevel,
     formData.goal,
-    formData.pace || 'recommended'
+    formData.pace || 'recommended',
+    formData.dietType,
+    Number(formData.targetWeightKg) || userProfile.targetWeightKg || undefined
   );
 
-  const handleApplyCalculated = () => {
-    setFormData((prev) => ({
-      ...prev,
-      targetCalories: preview.targetCalories,
-      targetProteinG: preview.targetProteinG,
-      targetCarbsG: preview.targetCarbsG,
-      targetFatG: preview.targetFatG,
-      waterTargetMl: preview.waterTargetMl,
-    }));
+  // Internal AI engine calculation wrapper: auto-synchronizes macros whenever biometrics or goals change
+  const updateMetric = (field: keyof ProfileFormData, value: any) => {
+    setFormData((prev) => {
+      const next = { ...prev, [field]: value };
+      const currentW = Number(next.currentWeightKg) || userProfile.currentWeightKg || 75;
+      const height = Number(next.heightCm) || userProfile.heightCm || 170;
+      const ageNum = Number(next.age) || userProfile.age || 25;
+      const targetW = Number(next.targetWeightKg) || userProfile.targetWeightKg || undefined;
+
+      const calc = calculateTargets(
+        currentW,
+        height,
+        ageNum,
+        next.gender,
+        next.activityLevel,
+        next.goal,
+        next.pace || 'recommended',
+        next.dietType,
+        targetW
+      );
+
+      return {
+        ...next,
+        targetCalories: calc.targetCalories,
+        targetProteinG: calc.targetProteinG,
+        targetCarbsG: calc.targetCarbsG,
+        targetFatG: calc.targetFatG,
+        waterTargetMl: calc.waterTargetMl,
+      };
+    });
   };
 
-  const handleVerifyWithAI = async () => {
-    setIsVerifyingAI(true);
-    setAiResult(null);
-    try {
-      const res = await verifyTargetsWithAI({
-        age: Number(formData.age) || userProfile.age || 25,
-        gender: formData.gender,
-        heightCm: Number(formData.heightCm) || userProfile.heightCm || 170,
-        currentWeightKg: Number(formData.currentWeightKg) || userProfile.currentWeightKg || 75,
-        targetWeightKg: Number(formData.targetWeightKg) || userProfile.targetWeightKg || 68,
-        activityLevel: formData.activityLevel,
-        goal: formData.goal,
-        dietType: formData.dietType,
-        pace: formData.pace || 'recommended',
-        apiKey: userProfile.apiKey,
-        provider: userProfile.aiProvider,
-      });
-      setAiResult(res);
-    } catch (err) {
-      console.warn('AI target verification error:', err);
-    } finally {
-      setIsVerifyingAI(false);
-    }
-  };
-
-  const handleApplyAITargets = () => {
-    if (!aiResult) return;
-    setFormData((prev) => ({
-      ...prev,
-      targetCalories: aiResult.targetCalories,
-      targetProteinG: aiResult.targetProteinG,
-      targetCarbsG: aiResult.targetCarbsG,
-      targetFatG: aiResult.targetFatG,
-      waterTargetMl: aiResult.waterTargetMl,
-    }));
+  const updateDirectField = (field: keyof ProfileFormData, value: any) => {
+    setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -161,40 +158,17 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({
           Scientific metabolic calculations calibrated to your exact goal (fat loss deficit, muscle gain surplus, bulking, or maintenance).
         </p>
 
-        {/* Live Calculation Card with AI Check & Calibrate */}
+        {/* Live AI Metabolic Engine Card */}
         <div className="mt-4 p-4 rounded-2xl bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-emerald-950/30 dark:to-teal-950/20 border border-emerald-100 dark:border-emerald-900/40 space-y-3">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-emerald-800 dark:text-emerald-300 flex items-center gap-1">
+            <span className="text-xs font-bold text-emerald-800 dark:text-emerald-300 flex items-center gap-1.5">
               <Calculator className="w-3.5 h-3.5" />
               Calculated Energy Needs
             </span>
-            <div className="flex items-center gap-2">
-              <button
-                type="button"
-                onClick={handleVerifyWithAI}
-                disabled={isVerifyingAI}
-                className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400 bg-white dark:bg-slate-900 px-2.5 py-1 rounded-xl shadow-2xs border border-emerald-200 dark:border-emerald-800/60 hover:bg-emerald-50 flex items-center gap-1 disabled:opacity-50"
-              >
-                {isVerifyingAI ? (
-                  <>
-                    <RefreshCw className="w-3 h-3 animate-spin" />
-                    Checking...
-                  </>
-                ) : (
-                  <>
-                    <Sparkles className="w-3 h-3 text-emerald-500" />
-                    Verify with AI
-                  </>
-                )}
-              </button>
-              <button
-                type="button"
-                onClick={handleApplyCalculated}
-                className="text-[11px] font-bold text-emerald-700 dark:text-emerald-300 underline hover:text-emerald-800"
-              >
-                Sync
-              </button>
-            </div>
+            <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-700 dark:text-emerald-300 bg-white/90 dark:bg-slate-900/90 px-2.5 py-0.5 rounded-full border border-emerald-200/80 dark:border-emerald-800/60 shadow-2xs">
+              <Sparkles className="w-3 h-3 text-emerald-500" />
+              AI Calibrated
+            </span>
           </div>
 
           <div className="grid grid-cols-3 gap-2 text-xs">
@@ -231,33 +205,10 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({
             </div>
           </div>
 
-          {/* AI Verification Results Card */}
-          {aiResult && (
-            <div className="p-3 bg-white/80 dark:bg-slate-900/80 rounded-xl border border-emerald-200/80 dark:border-emerald-800/80 space-y-2 text-xs">
-              <div className="flex items-center justify-between">
-                <span className="text-[11px] font-extrabold text-emerald-700 dark:text-emerald-300 flex items-center gap-1">
-                  <Sparkles className="w-3.5 h-3.5 text-emerald-500" />
-                  AI Nutritionist Review
-                </span>
-                <button
-                  type="button"
-                  onClick={handleApplyAITargets}
-                  className="px-2.5 py-0.5 rounded-lg bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-[10px] shadow-2xs active:scale-95"
-                >
-                  Apply AI Targets
-                </button>
-              </div>
-              <p className="text-[11px] text-slate-600 dark:text-slate-300 leading-relaxed">
-                {aiResult.aiExplanation}
-              </p>
-              <div className="flex items-center gap-3 text-[10px] font-bold text-slate-500 dark:text-slate-400 pt-1 border-t border-slate-100 dark:border-slate-800">
-                <span>Cals: <strong className="text-slate-900 dark:text-white">{aiResult.targetCalories}</strong></span>
-                <span>Protein: <strong className="text-blue-600 dark:text-blue-400">{aiResult.targetProteinG}g</strong></span>
-                <span>Carbs: <strong className="text-amber-600 dark:text-amber-400">{aiResult.targetCarbsG}g</strong></span>
-                <span>Fats: <strong className="text-purple-600 dark:text-purple-400">{aiResult.targetFatG}g</strong></span>
-              </div>
-            </div>
-          )}
+          <div className="pt-2 border-t border-emerald-100/80 dark:border-emerald-900/40 text-[11px] text-emerald-800 dark:text-emerald-300 flex items-center gap-1.5">
+            <span>✨</span>
+            <span className="font-medium">{preview.explanation}</span>
+          </div>
         </div>
 
         {/* Form */}
@@ -270,7 +221,7 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({
               <input
                 type="text"
                 value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                onChange={(e) => updateDirectField('name', e.target.value)}
                 className="w-full p-2.5 text-xs rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white"
               />
             </div>
@@ -281,7 +232,7 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({
               <input
                 type="number"
                 value={formData.age}
-                onChange={(e) => setFormData({ ...formData, age: e.target.value })}
+                onChange={(e) => updateMetric('age', e.target.value)}
                 className="w-full p-2.5 text-xs rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white"
               />
             </div>
@@ -294,7 +245,7 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({
               </label>
               <select
                 value={formData.gender}
-                onChange={(e) => setFormData({ ...formData, gender: e.target.value as Gender })}
+                onChange={(e) => updateMetric('gender', e.target.value as Gender)}
                 className="w-full p-2.5 text-xs rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white"
               >
                 <option value="male">Male</option>
@@ -309,7 +260,7 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({
               <input
                 type="number"
                 value={formData.heightCm}
-                onChange={(e) => setFormData({ ...formData, heightCm: e.target.value })}
+                onChange={(e) => updateMetric('heightCm', e.target.value)}
                 className="w-full p-2.5 text-xs rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white"
               />
             </div>
@@ -321,7 +272,7 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({
                 type="number"
                 step="0.5"
                 value={formData.currentWeightKg}
-                onChange={(e) => setFormData({ ...formData, currentWeightKg: e.target.value })}
+                onChange={(e) => updateMetric('currentWeightKg', e.target.value)}
                 className="w-full p-2.5 text-xs rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white"
               />
             </div>
@@ -336,7 +287,7 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({
                 type="number"
                 step="0.5"
                 value={formData.targetWeightKg}
-                onChange={(e) => setFormData({ ...formData, targetWeightKg: e.target.value })}
+                onChange={(e) => updateMetric('targetWeightKg', e.target.value)}
                 className="w-full p-2.5 text-xs rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white"
               />
             </div>
@@ -347,7 +298,7 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({
               <select
                 value={formData.goal}
                 onChange={(e) =>
-                  setFormData({ ...formData, goal: e.target.value as FitnessGoal })
+                  updateMetric('goal', e.target.value as FitnessGoal)
                 }
                 className="w-full p-2.5 text-xs rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white"
               >
@@ -367,7 +318,7 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({
               <select
                 value={formData.pace || 'recommended'}
                 onChange={(e) =>
-                  setFormData({ ...formData, pace: e.target.value as TransformationPace })
+                  updateMetric('pace', e.target.value as TransformationPace)
                 }
                 className="w-full p-2.5 text-xs rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white"
               >
@@ -388,7 +339,7 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({
               <select
                 value={formData.dietType || 'veg'}
                 onChange={(e) =>
-                  setFormData({ ...formData, dietType: e.target.value as DietType })
+                  updateMetric('dietType', e.target.value as DietType)
                 }
                 className="w-full p-2.5 text-xs rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white"
               >
@@ -409,7 +360,7 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({
             <select
               value={formData.activityLevel}
               onChange={(e) =>
-                setFormData({ ...formData, activityLevel: e.target.value as ActivityLevel })
+                updateMetric('activityLevel', e.target.value as ActivityLevel)
               }
               className="w-full p-2.5 text-xs rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white"
             >
@@ -432,7 +383,7 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({
                 <input
                   type="number"
                   value={formData.targetCalories}
-                  onChange={(e) => setFormData({ ...formData, targetCalories: e.target.value })}
+                  onChange={(e) => updateDirectField('targetCalories', e.target.value)}
                   className="w-full p-2 text-xs font-bold rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white"
                 />
               </div>
@@ -441,7 +392,7 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({
                 <input
                   type="number"
                   value={formData.targetProteinG}
-                  onChange={(e) => setFormData({ ...formData, targetProteinG: e.target.value })}
+                  onChange={(e) => updateDirectField('targetProteinG', e.target.value)}
                   className="w-full p-2 text-xs font-bold rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-blue-600 dark:text-blue-400"
                 />
               </div>
@@ -450,7 +401,7 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({
                 <input
                   type="number"
                   value={formData.targetCarbsG}
-                  onChange={(e) => setFormData({ ...formData, targetCarbsG: e.target.value })}
+                  onChange={(e) => updateDirectField('targetCarbsG', e.target.value)}
                   className="w-full p-2 text-xs font-bold rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-amber-600 dark:text-amber-400"
                 />
               </div>
@@ -459,7 +410,7 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({
                 <input
                   type="number"
                   value={formData.targetFatG}
-                  onChange={(e) => setFormData({ ...formData, targetFatG: e.target.value })}
+                  onChange={(e) => updateDirectField('targetFatG', e.target.value)}
                   className="w-full p-2 text-xs font-bold rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-purple-600 dark:text-purple-400"
                 />
               </div>

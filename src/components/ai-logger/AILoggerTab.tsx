@@ -1,9 +1,20 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { MealType, FoodItem, MealLog, UserProfile } from '@/types';
-import { parseMealSentence, refineMealItems } from '@/services/aiService';
-import { Sparkles, ArrowRight, Check, AlertCircle, RefreshCw, Trash2, Edit3, MessageSquareText, Calendar } from 'lucide-react';
+import { parseMealSentence, refineMealItems, parseMealImage } from '@/services/aiService';
+import {
+  Utensils,
+  Camera,
+  Check,
+  AlertCircle,
+  RefreshCw,
+  Trash2,
+  MessageSquareText,
+  Calendar,
+  X,
+  RotateCcw,
+} from 'lucide-react';
 import { getTodayDateString, getYesterdayDateString } from '@/utils/dateUtils';
 
 interface AILoggerTabProps {
@@ -25,10 +36,14 @@ export const AILoggerTab: React.FC<AILoggerTabProps> = ({
 }) => {
   const [logDate, setLogDate] = useState<string>(selectedDate || getTodayDateString());
   const [mealType, setMealType] = useState<MealType>(initialMealType);
+  const [mealNamingMode, setMealNamingMode] = useState<'lifestyle' | 'classic'>('lifestyle');
   const [inputSentence, setInputSentence] = useState('');
   const [correctionSentence, setCorrectionSentence] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isRefining, setIsRefining] = useState(false);
+  const [photoPreview, setPhotoPreview] = useState<string | null>(null);
+  const [isAnalyzingPhoto, setIsAnalyzingPhoto] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
     if (selectedDate) {
@@ -59,10 +74,37 @@ export const AILoggerTab: React.FC<AILoggerTabProps> = ({
       setAssumptions(res.assumptions || []);
       setClarification(res.clarification || null);
     } catch (err: any) {
-      setErrorMessage(err.message || 'Failed to analyze meal');
+      setErrorMessage(err.message || 'Failed to calculate meal');
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handlePhotoCapture = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = async () => {
+      const base64 = reader.result as string;
+      setPhotoPreview(base64);
+      setIsAnalyzingPhoto(true);
+      setErrorMessage(null);
+      setRefineSummary(null);
+      setIsSaved(false);
+
+      try {
+        const res = await parseMealImage(base64, userProfile.apiKey, userProfile.aiProvider);
+        setParsedItems(res.items);
+        setAssumptions(res.assumptions || []);
+        setInputSentence(res.plateSummary || 'Meal from photo');
+      } catch (err: any) {
+        setErrorMessage(err.message || 'Failed to analyze plate photo');
+      } finally {
+        setIsAnalyzingPhoto(false);
+      }
+    };
+    reader.readAsDataURL(file);
   };
 
   const handleRefine = async () => {
@@ -90,6 +132,20 @@ export const AILoggerTab: React.FC<AILoggerTabProps> = ({
     setParsedItems((prev) => prev.filter((it) => it.id !== id));
   };
 
+  const handleResetDraft = () => {
+    setInputSentence('');
+    setCorrectionSentence('');
+    setParsedItems([]);
+    setPhotoPreview(null);
+    setAssumptions([]);
+    setClarification(null);
+    setErrorMessage(null);
+    setRefineSummary(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
   // Aggregated totals
   const totalCalories = parsedItems.reduce((sum, it) => sum + (it.calories || 0), 0);
   const totalProtein = parsedItems.reduce((sum, it) => sum + (it.proteinG || 0), 0);
@@ -108,37 +164,69 @@ export const AILoggerTab: React.FC<AILoggerTabProps> = ({
       totalProtein,
       totalCarbs,
       totalFat,
-      rawInput: inputSentence,
+      rawInput: inputSentence || (photoPreview ? 'Photo plate recognition' : undefined),
       assumptions,
       createdAt: new Date().toISOString(),
     };
 
     onMealSaved(newMeal);
     setIsSaved(true);
+
     setTimeout(() => {
-      // Reset after brief success message
       setParsedItems([]);
       setInputSentence('');
+      setPhotoPreview(null);
       setIsSaved(false);
     }, 1800);
   };
+
+  const lifestyleMeals: { id: MealType; label: string }[] = [
+    { id: 'meal_1', label: 'Meal 1 (Brunch / First)' },
+    { id: 'meal_2', label: 'Meal 2 (Afternoon / Mid)' },
+    { id: 'meal_3', label: 'Meal 3 (Dinner / Evening)' },
+    { id: 'meal_4', label: 'Meal 4 (Late Snack)' },
+    { id: 'snack', label: 'Snack' },
+  ];
+
+  const classicMeals: { id: MealType; label: string }[] = [
+    { id: 'breakfast', label: 'Breakfast' },
+    { id: 'lunch', label: 'Lunch' },
+    { id: 'dinner', label: 'Dinner' },
+    { id: 'snack', label: 'Snack' },
+  ];
+
+  const activeMealSlots = mealNamingMode === 'lifestyle' ? lifestyleMeals : classicMeals;
 
   return (
     <div className="space-y-4 pb-20">
       {/* Header */}
       <div className="bg-white dark:bg-slate-900 rounded-3xl p-5 border border-slate-100 dark:border-slate-800 shadow-xs">
-        <div className="flex items-center gap-2 text-emerald-600 dark:text-emerald-400 font-bold text-sm mb-1">
-          <Sparkles className="w-4 h-4" />
-          <span>Conversational AI Meal Logger</span>
+        <div className="flex items-center justify-between gap-2 mb-1">
+          <div className="flex items-center gap-2 text-emerald-600 dark:text-emerald-400 font-bold text-sm">
+            <Utensils className="w-4 h-4" />
+            <span>Log Food</span>
+          </div>
+
+          {/* Lifestyle / Classic schedule toggle */}
+          <button
+            type="button"
+            onClick={() =>
+              setMealNamingMode((prev) => (prev === 'lifestyle' ? 'classic' : 'lifestyle'))
+            }
+            className="text-[10px] font-bold text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-2.5 py-1 rounded-xl hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
+          >
+            {mealNamingMode === 'lifestyle' ? '☀️ Late Riser Mode' : '⏰ Classic Slots'}
+          </button>
         </div>
+
         <h2 className="text-xl font-black text-slate-900 dark:text-white tracking-tight">
-          Log What You Ate in Plain English
+          What did you eat?
         </h2>
         <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-          Type what you ate naturally. AI calculates exact calories and macros instantly.
+          Type naturally in plain words or snap a photo of your plate.
         </p>
 
-        {/* Date Selector for Past/Today Logging */}
+        {/* Date Selector */}
         <div className="flex items-center justify-between gap-2 mt-3 pt-3 border-t border-slate-100 dark:border-slate-800 text-xs">
           <div className="flex items-center gap-1.5 text-slate-600 dark:text-slate-400">
             <Calendar className="w-3.5 h-3.5 text-emerald-500" />
@@ -190,49 +278,91 @@ export const AILoggerTab: React.FC<AILoggerTabProps> = ({
           </div>
         </div>
 
-        {/* Meal Type Pills */}
-        <div className="flex items-center gap-2 mt-3 overflow-x-auto pb-1">
-          {(['breakfast', 'lunch', 'dinner', 'snack'] as MealType[]).map((type) => (
+        {/* Meal Slots (Lifestyle 11 AM Friendly or Classic) */}
+        <div className="flex items-center gap-1.5 mt-3 overflow-x-auto pb-1 no-scrollbar">
+          {activeMealSlots.map((slot) => (
             <button
-              key={type}
-              onClick={() => setMealType(type)}
-              className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold capitalize transition-all shrink-0 ${
-                mealType === type
-                  ? 'bg-emerald-500 text-white shadow-xs scale-102'
+              key={slot.id}
+              onClick={() => setMealType(slot.id)}
+              className={`px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all shrink-0 ${
+                mealType === slot.id
+                  ? 'bg-emerald-500 text-white shadow-2xs scale-102'
                   : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200'
               }`}
             >
-              {type}
+              {slot.label}
             </button>
           ))}
         </div>
 
-        {/* Input Text Box */}
-        <div className="mt-3">
+        {/* Photo Thumbnail if uploaded */}
+        {photoPreview && (
+          <div className="mt-3 relative inline-block rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-700 shadow-xs">
+            <img src={photoPreview} alt="Plate Capture" className="h-28 w-auto object-cover rounded-2xl" />
+            <button
+              type="button"
+              onClick={() => setPhotoPreview(null)}
+              className="absolute top-1.5 right-1.5 p-1 rounded-full bg-black/60 text-white hover:bg-black"
+            >
+              <X className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        )}
+
+        {/* Input Text Box with Camera Trigger */}
+        <div className="mt-3 relative">
           <textarea
             value={inputSentence}
             onChange={(e) => setInputSentence(e.target.value)}
-            placeholder="What did you eat? Type your meal here..."
+            placeholder="e.g., 2 parathas with curd and 1 cup chai..."
             rows={3}
-            className="w-full p-3.5 text-sm rounded-2xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 resize-none transition-all"
+            className="w-full p-3.5 pb-10 text-sm rounded-2xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 resize-none transition-all"
           />
 
-          <div className="flex justify-end items-center mt-2.5">
+          {/* Hidden File Input for Camera OCR */}
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            capture="environment"
+            className="hidden"
+            onChange={handlePhotoCapture}
+          />
+
+          {/* Action Bar inside/below input */}
+          <div className="flex items-center justify-between mt-1 px-1">
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              disabled={isAnalyzingPhoto}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold text-xs transition-colors"
+              title="Snap photo of plate"
+            >
+              {isAnalyzingPhoto ? (
+                <>
+                  <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                  Analyzing Plate...
+                </>
+              ) : (
+                <>
+                  <Camera className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+                  <span>Snap Plate Photo</span>
+                </>
+              )}
+            </button>
+
             <button
               onClick={() => handleParse()}
               disabled={isLoading || !inputSentence.trim()}
-              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white font-bold text-xs shadow-xs active:scale-98 disabled:opacity-50 disabled:pointer-events-none transition-all"
+              className="inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-xs shadow-2xs active:scale-98 disabled:opacity-50 disabled:pointer-events-none transition-all"
             >
               {isLoading ? (
                 <>
                   <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-                  Calculating Calories...
+                  Calculating...
                 </>
               ) : (
-                <>
-                  <Sparkles className="w-3.5 h-3.5" />
-                  Analyze Meal with AI
-                </>
+                'Calculate Nutrition'
               )}
             </button>
           </div>
@@ -253,10 +383,10 @@ export const AILoggerTab: React.FC<AILoggerTabProps> = ({
           <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
             <div>
               <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
-                AI Nutritional Breakdown
+                Nutritional Breakdown
               </span>
               <h3 className="text-lg font-black text-slate-900 dark:text-white capitalize">
-                {mealType} Summary
+                Meal Summary
               </h3>
             </div>
             <div className="text-right">
@@ -289,7 +419,7 @@ export const AILoggerTab: React.FC<AILoggerTabProps> = ({
 
           {/* Itemized List */}
           <div className="space-y-2">
-            <div className="text-xs font-bold text-slate-700 dark:text-slate-300">Itemized Components:</div>
+            <div className="text-xs font-bold text-slate-700 dark:text-slate-300">Items Identified:</div>
             {parsedItems.map((item) => (
               <div
                 key={item.id}
@@ -343,7 +473,7 @@ export const AILoggerTab: React.FC<AILoggerTabProps> = ({
           {assumptions.length > 0 && (
             <div className="p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/30 text-[11px] text-slate-500 dark:text-slate-400 space-y-1">
               <span className="font-bold text-slate-700 dark:text-slate-300 block">
-                Assumptions made by AI:
+                Estimated Portions:
               </span>
               <ul className="list-disc pl-4 space-y-0.5">
                 {assumptions.map((assump, i) => (
@@ -354,13 +484,13 @@ export const AILoggerTab: React.FC<AILoggerTabProps> = ({
           )}
 
           {/* Conversational Correction Section */}
-          <div className="mt-4 pt-4 border-t border-slate-100 dark:border-slate-800 bg-emerald-50/40 dark:bg-emerald-950/20 rounded-2xl p-3.5 border border-emerald-100 dark:border-emerald-900/30">
-            <div className="flex items-center gap-1.5 text-xs font-bold text-emerald-800 dark:text-emerald-300 mb-1.5">
+          <div className="mt-4 pt-4 border-t border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/30 rounded-2xl p-3.5 border border-slate-200/80 dark:border-slate-800">
+            <div className="flex items-center gap-1.5 text-xs font-bold text-slate-800 dark:text-slate-200 mb-1.5">
               <MessageSquareText className="w-3.5 h-3.5 text-emerald-600" />
-              <span>Correct or Fine-Tune with AI</span>
+              <span>Adjust or Fine-Tune Portion</span>
             </div>
             <p className="text-[11px] text-slate-500 dark:text-slate-400 mb-2">
-              Want to adjust anything? Tell the AI: <em>"Actually make it plain roti with no butter"</em> or <em>"Remove the dessert and add 1 cup curd"</em>.
+              Want to change anything? E.g., <em>"Make it 3 rotis without butter"</em> or <em>"Add 1 glass lassi"</em>.
             </p>
 
             <div className="flex gap-2">
@@ -368,7 +498,7 @@ export const AILoggerTab: React.FC<AILoggerTabProps> = ({
                 type="text"
                 value={correctionSentence}
                 onChange={(e) => setCorrectionSentence(e.target.value)}
-                placeholder="e.g. Remove ghee, change to 3 rotis, half rice..."
+                placeholder="e.g. Change to 3 rotis, remove ghee..."
                 className="flex-1 p-2 text-xs rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-emerald-500"
                 onKeyDown={(e) => {
                   if (e.key === 'Enter') handleRefine();
@@ -379,7 +509,7 @@ export const AILoggerTab: React.FC<AILoggerTabProps> = ({
                 disabled={isRefining || !correctionSentence.trim()}
                 className="px-3 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs rounded-xl flex items-center gap-1 shrink-0 active:scale-95 disabled:opacity-50 transition-all shadow-xs"
               >
-                {isRefining ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : 'Refine'}
+                {isRefining ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : 'Update'}
               </button>
             </div>
 
@@ -399,22 +529,36 @@ export const AILoggerTab: React.FC<AILoggerTabProps> = ({
               className={`flex-1 py-3 px-4 rounded-2xl font-bold text-xs flex items-center justify-center gap-2 transition-all shadow-sm ${
                 isSaved
                   ? 'bg-emerald-600 text-white'
-                  : 'bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-100 text-white dark:text-slate-900 active:scale-98'
+                  : 'bg-emerald-500 hover:bg-emerald-600 text-white active:scale-98'
               }`}
             >
               {isSaved ? (
                 <>
                   <Check className="w-4 h-4" />
-                  Saved to Today's Log!
+                  Saved to Today's Food Log!
                 </>
               ) : (
                 <>
                   <Check className="w-4 h-4" />
-                  Confirm & Log {mealType} ({totalCalories} kcal)
+                  Log Meal ({totalCalories} kcal)
                 </>
               )}
             </button>
           </div>
+        </div>
+      )}
+
+      {/* Discreet Sectional Reset Button */}
+      {(inputSentence || parsedItems.length > 0 || photoPreview) && (
+        <div className="text-center pt-2">
+          <button
+            type="button"
+            onClick={handleResetDraft}
+            className="text-[11px] text-slate-400 hover:text-rose-500 underline inline-flex items-center gap-1 transition-colors"
+          >
+            <RotateCcw className="w-3 h-3" />
+            <span>Clear current meal draft</span>
+          </button>
         </div>
       )}
     </div>
