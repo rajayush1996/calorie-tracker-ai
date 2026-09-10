@@ -60,7 +60,7 @@ export const WaterTracker: React.FC<WaterTrackerProps> = ({
             <button
               type="button"
               onClick={() => onUpdateWater(Math.max(0, consumedMl - 250))}
-              className="w-7 h-7 rounded-xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 text-slate-500 hover:text-slate-900 flex items-center justify-center active:scale-95 transition-all text-xs"
+              className="w-7 h-7 rounded-xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 text-slate-500 hover:text-slate-900 inline-flex items-center justify-center active:scale-95 transition-all text-xs"
               title="Remove 250ml"
             >
               <Minus className="w-3 h-3" />
@@ -69,14 +69,14 @@ export const WaterTracker: React.FC<WaterTrackerProps> = ({
           <button
             type="button"
             onClick={() => handleAdd(250)}
-            className="px-2.5 py-1 rounded-xl bg-cyan-500 hover:bg-cyan-600 active:scale-95 text-white font-bold text-[11px] shadow-2xs transition-all flex items-center gap-0.5"
+            className="h-7 px-2.5 rounded-xl bg-cyan-500 hover:bg-cyan-600 active:scale-95 text-white font-bold text-[11px] shadow-2xs transition-all inline-flex items-center gap-0.5"
           >
             <Plus className="w-3 h-3" /> 250ml
           </button>
           <button
             type="button"
             onClick={() => handleAdd(500)}
-            className="px-2.5 py-1 rounded-xl bg-white dark:bg-slate-900 border border-cyan-200 dark:border-cyan-800/60 hover:bg-cyan-50 dark:hover:bg-cyan-950/40 text-cyan-700 dark:text-cyan-300 font-bold text-[11px] transition-all active:scale-95"
+            className="h-7 px-2.5 rounded-xl bg-white dark:bg-slate-900 border border-cyan-200 dark:border-cyan-800/60 hover:bg-cyan-50 dark:hover:bg-cyan-950/40 text-cyan-700 dark:text-cyan-300 font-bold text-[11px] transition-all active:scale-95 inline-flex items-center"
           >
             +500ml
           </button>

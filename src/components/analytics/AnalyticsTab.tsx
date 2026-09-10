@@ -353,15 +353,15 @@ export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({
 
           <button
             type="submit"
-            className={`w-full py-2.5 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 transition-all shadow-xs ${
+            className={`w-full h-11 rounded-2xl font-bold text-xs flex items-center justify-center gap-1.5 transition-all shadow-xs ${
               isSaved
-                ? 'bg-emerald-600 text-white'
+                ? 'bg-emerald-600 text-white shadow-2xs'
                 : 'bg-emerald-500 hover:bg-emerald-600 text-white active:scale-98'
             }`}
           >
             {isSaved ? (
               <>
-                <Check className="w-3.5 h-3.5" /> Saved Check-In!
+                <Check className="w-3.5 h-3.5 stroke-[2.5]" /> Saved Check-In!
               </>
             ) : (
               <>

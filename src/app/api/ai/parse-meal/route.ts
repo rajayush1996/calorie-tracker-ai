@@ -85,7 +85,7 @@ Return ONLY a valid JSON object matching this schema:
 }
 
 // Fallback heuristic database for common queries
-function generateHeuristicMealParse(sentence: string) {
+export function generateHeuristicMealParse(sentence: string) {
   const lower = sentence.toLowerCase();
   const items: FoodItem[] = [];
   const assumptions: string[] = ['Estimated using NutriAI Smart Heuristics database'];

@@ -116,7 +116,7 @@ export const DailyAuditTab: React.FC<DailyAuditTabProps> = ({
         <button
           onClick={handleRunAudit}
           disabled={isLoading}
-          className="w-full mt-2 py-3 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs shadow-md shadow-indigo-500/20 flex items-center justify-center gap-2 active:scale-98 disabled:opacity-50 transition-all"
+          className="w-full mt-2 h-11 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs shadow-md shadow-indigo-500/20 flex items-center justify-center gap-2 active:scale-98 disabled:opacity-60 disabled:cursor-not-allowed transition-all"
         >
           {isLoading ? (
             <>

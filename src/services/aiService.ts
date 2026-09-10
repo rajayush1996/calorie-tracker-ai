@@ -268,3 +268,25 @@ export async function generateMultiWeekWorkoutProgram(params: {
 
   return res.json();
 }
+
+export async function parseWorkoutDocument(params: {
+  fileText: string;
+  fileName?: string;
+  experienceLevel?: string;
+  equipmentAccess?: string;
+  apiKey?: string;
+  provider?: string;
+}): Promise<MultiWeekWorkoutProgram & { provider?: string }> {
+  const res = await fetch('/api/ai/parse-workout-doc', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(params),
+  });
+
+  if (!res.ok) {
+    const errorData = await res.json().catch(() => ({}));
+    throw new Error(errorData.error || 'Failed to parse workout document');
+  }
+
+  return res.json();
+}

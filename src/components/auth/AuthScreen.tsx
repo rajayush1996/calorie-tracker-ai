@@ -147,7 +147,7 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ onAuthenticated, onBackT
 
           <button
             type="submit"
-            className="w-full py-3 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white font-bold text-xs shadow-md shadow-emerald-500/25 flex items-center justify-center gap-2 active:scale-98 transition-all"
+            className="w-full h-11 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white font-bold text-xs shadow-md shadow-emerald-500/25 flex items-center justify-center gap-2 active:scale-98 transition-all"
           >
             <span>{isSignUp ? 'Continue to Personal Calibration' : 'Sign In to My Diary'}</span>
             <ArrowRight className="w-4 h-4" />
@@ -166,7 +166,7 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ onAuthenticated, onBackT
               const freshUser = signupUser('Fresh User', `user_${Date.now()}@nutriai.local`);
               onAuthenticated(freshUser);
             }}
-            className="w-full py-2.5 rounded-2xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs flex items-center justify-center gap-1.5 transition-all active:scale-98"
+            className="w-full h-11 rounded-2xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs flex items-center justify-center gap-1.5 transition-all active:scale-98"
           >
             <Zap className="w-3.5 h-3.5 text-emerald-500" />
             <span>Start Fresh as New User (Instant)</span>

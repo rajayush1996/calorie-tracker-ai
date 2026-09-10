@@ -177,7 +177,7 @@ export const DaySummaryCard: React.FC<DaySummaryCardProps> = ({
           <button
             type="button"
             onClick={onOpenAudit}
-            className="px-2.5 py-1 rounded-xl bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 font-bold text-[11px] transition-colors"
+            className="h-7 px-2.5 rounded-xl bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 font-bold text-[11px] inline-flex items-center transition-colors"
           >
             Review Day
           </button>
@@ -210,7 +210,7 @@ export const DaySummaryCard: React.FC<DaySummaryCardProps> = ({
           <button
             type="button"
             onClick={() => onOpenLogger()}
-            className="px-3 py-1.5 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-xs flex items-center gap-1 active:scale-95 transition-all shadow-xs"
+            className="h-7 px-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-xs inline-flex items-center gap-1 active:scale-95 transition-all shadow-xs"
           >
             <Plus className="w-3.5 h-3.5" />
             <span>Log Food</span>

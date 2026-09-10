@@ -223,7 +223,7 @@ export const DietPlannerTab: React.FC<DietPlannerTabProps> = ({
           <button
             type="button"
             onClick={() => setPlanMode('pantry')}
-            className={`py-2 px-3 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all ${
+            className={`h-10 px-3 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all ${
               planMode === 'pantry'
                 ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-2xs'
                 : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
@@ -235,7 +235,7 @@ export const DietPlannerTab: React.FC<DietPlannerTabProps> = ({
           <button
             type="button"
             onClick={() => setPlanMode('upload')}
-            className={`py-2 px-3 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all ${
+            className={`h-10 px-3 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all ${
               planMode === 'upload'
                 ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-2xs'
                 : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
@@ -330,7 +330,7 @@ export const DietPlannerTab: React.FC<DietPlannerTabProps> = ({
             <button
               onClick={handleGeneratePantryPlan}
               disabled={isLoading}
-              className="w-full py-3 rounded-2xl bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-sm active:scale-98 disabled:opacity-50 transition-all"
+              className="w-full h-11 rounded-2xl bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-sm active:scale-98 disabled:opacity-60 disabled:cursor-not-allowed transition-all"
             >
               {isLoading ? (
                 <>
@@ -370,7 +370,7 @@ export const DietPlannerTab: React.FC<DietPlannerTabProps> = ({
                 <button
                   type="button"
                   onClick={() => fileInputRef.current?.click()}
-                  className="px-4 py-2 rounded-xl bg-blue-50 hover:bg-blue-100 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 font-bold text-xs border border-blue-200 dark:border-blue-800 transition-colors"
+                  className="h-10 px-4 rounded-xl bg-blue-50 hover:bg-blue-100 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 font-bold text-xs border border-blue-200 dark:border-blue-800 transition-colors inline-flex items-center justify-center"
                 >
                   {uploadedFileName ? `Change File (${uploadedFileName})` : 'Choose Diet File (PDF/Image)'}
                 </button>
@@ -394,7 +394,7 @@ export const DietPlannerTab: React.FC<DietPlannerTabProps> = ({
             <button
               onClick={handleImportUploadedDiet}
               disabled={isLoading || !uploadText.trim()}
-              className="w-full py-3 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-sm active:scale-98 disabled:opacity-50 transition-all"
+              className="w-full h-11 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-sm active:scale-98 disabled:opacity-60 disabled:cursor-not-allowed transition-all"
             >
               {isLoading ? (
                 <>
@@ -489,19 +489,21 @@ export const DietPlannerTab: React.FC<DietPlannerTabProps> = ({
                     <button
                       onClick={() => handleQuickLog(index)}
                       disabled={isLogged}
-                      className={`w-full py-2 px-3 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 transition-all ${
+                      className={`w-full h-10 px-3 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 transition-all ${
                         isLogged
-                          ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300 cursor-default'
+                          ? 'bg-emerald-600 text-white shadow-2xs cursor-default'
                           : 'bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 active:scale-98'
                       }`}
                     >
                       {isLogged ? (
                         <>
-                          <Check className="w-3.5 h-3.5" /> Logged to Today
+                          <Check className="w-3.5 h-3.5 stroke-[2.5]" />
+                          <span>Logged to Today!</span>
                         </>
                       ) : (
                         <>
-                          <Plus className="w-3.5 h-3.5 text-emerald-500" /> Log This Meal to Today
+                          <Plus className="w-3.5 h-3.5 text-emerald-500 stroke-[2.5]" />
+                          <span>Log This Meal to Today</span>
                         </>
                       )}
                     </button>

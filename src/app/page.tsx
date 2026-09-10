@@ -44,8 +44,11 @@ import { RescueModal } from '@/components/rescue/RescueModal';
 import { PwaInstallPrompt } from '@/components/common/PwaInstallPrompt';
 import { DateNavigator } from '@/components/common/DateNavigator';
 import { DaySummaryCard } from '@/components/dashboard/DaySummaryCard';
+import { StickyQuickLogFab } from '@/components/dashboard/StickyQuickLogFab';
 import { getTodayDateString, getYesterdayDateString } from '@/utils/dateUtils';
-import { RotateCcw } from 'lucide-react';
+import { RotateCcw, Dumbbell, TrendingUp } from 'lucide-react';
+import { loadActiveWorkoutProgram } from '@/utils/storage';
+import { MultiWeekWorkoutProgram, ProgramTrainingDay } from '@/types';
 
 export default function Home() {
   const [currentUser, setCurrentUser] = useState<UserAccount | null>(null);
@@ -63,6 +66,8 @@ export default function Home() {
   const [isClient, setIsClient] = useState(false);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [isExerciseModalOpen, setIsExerciseModalOpen] = useState(false);
+  const [activeWorkoutProgram, setActiveWorkoutProgram] = useState<MultiWeekWorkoutProgram | null>(null);
+  const [selectedGymDayIdx, setSelectedGymDayIdx] = useState<number>(0);
   const [dietTabMode, setDietTabMode] = useState<'pantry' | 'upload'>('pantry');
   const [showSplash, setShowSplash] = useState(true);
 
@@ -95,6 +100,9 @@ export default function Home() {
     const meas = loadBodyMeasurements(userId);
     setMeasurements(meas);
 
+    const prog = loadActiveWorkoutProgram(userId);
+    setActiveWorkoutProgram(prog);
+
     // 2. Restore from server disk file db if available
     const restored = await restoreFromFileDb(userId);
     if (restored) {
@@ -102,8 +110,25 @@ export default function Home() {
       setTodayLog(loadTodayLog(userId));
       setAllLogs(loadAllDailyLogs(userId));
       setMeasurements(loadBodyMeasurements(userId));
+      setActiveWorkoutProgram(loadActiveWorkoutProgram(userId));
     }
   };
+
+  const isDayTodayMatch = (dayName: string, dayTitle: string): boolean => {
+    const currentDayIndex = new Date().getDay();
+    const dayNamesShort = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
+    const dayNamesFull = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+    const text = `${dayName} ${dayTitle}`.toLowerCase();
+    return text.includes(dayNamesShort[currentDayIndex]) || text.includes(dayNamesFull[currentDayIndex]);
+  };
+
+  const currentProgramWeek = activeWorkoutProgram?.weeks?.[0];
+  const todayWorkoutDayIndex =
+    currentProgramWeek?.days?.findIndex((d) => isDayTodayMatch(d.dayName, d.dayTitle)) ?? -1;
+  const activeWorkoutDay: ProgramTrainingDay | null =
+    todayWorkoutDayIndex !== -1 && currentProgramWeek?.days
+      ? currentProgramWeek.days[todayWorkoutDayIndex]
+      : currentProgramWeek?.days?.[0] || null;
 
   const handleAuthenticated = (user: UserAccount) => {
     setCurrentUser(user);
@@ -509,6 +534,81 @@ export default function Home() {
 
               <CalorieRing consumed={consumedTotals} profile={userProfile} />
 
+              {/* Today's Gym Workout Companion Card (1-Tap Direct Gym Session Access) */}
+              <div className="p-4 rounded-3xl bg-gradient-to-br from-emerald-500/10 via-slate-50 to-teal-500/10 dark:from-emerald-950/40 dark:via-slate-900 dark:to-teal-950/20 border border-emerald-200/70 dark:border-emerald-900/60 shadow-xs space-y-2.5">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-8 h-8 rounded-xl bg-emerald-500 text-white flex items-center justify-center font-bold shadow-xs shrink-0">
+                      <Dumbbell className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-[10px] font-black uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
+                          Gym & Workout Companion
+                        </span>
+                        {activeWorkoutDay && todayWorkoutDayIndex !== -1 && (
+                          <span className="text-[8px] font-black px-1.5 py-0.2 rounded-full bg-emerald-500 text-white uppercase animate-pulse">
+                            ● TODAY
+                          </span>
+                        )}
+                      </div>
+                      <h4 className="text-xs font-black text-slate-900 dark:text-white truncate max-w-[200px]">
+                        {activeWorkoutDay
+                          ? `${activeWorkoutDay.dayName}: ${activeWorkoutDay.dayTitle}`
+                          : '5-6 Exercise Progressive Coach'}
+                      </h4>
+                    </div>
+                  </div>
+                  {activeWorkoutDay && (
+                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-900/60 text-emerald-700 dark:text-emerald-300 shrink-0">
+                      {activeWorkoutDay.focus}
+                    </span>
+                  )}
+                </div>
+
+                {activeWorkoutDay ? (
+                  <>
+                    <div className="flex items-center gap-2 text-[11px] text-slate-600 dark:text-slate-300">
+                      <span className="font-bold text-slate-800 dark:text-slate-200">
+                        🏋️ {activeWorkoutDay.exercises?.length || 6} Exercises
+                      </span>
+                      <span>•</span>
+                      <span>⏱️ {activeWorkoutDay.estimatedDurationMinutes}m</span>
+                      <span>•</span>
+                      <span className="text-amber-600 dark:text-amber-400 font-bold">
+                        🔥 ~{activeWorkoutDay.estimatedCaloriesBurn} kcal
+                      </span>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setSelectedGymDayIdx(todayWorkoutDayIndex !== -1 ? todayWorkoutDayIndex : 0);
+                        setIsExerciseModalOpen(true);
+                      }}
+                      className="w-full h-10 px-3 rounded-2xl bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-xs active:scale-98 transition-all"
+                    >
+                      <Dumbbell className="w-3.5 h-3.5" />
+                      <span>Open Today&apos;s Workout & Form Guides</span>
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <p className="text-[11px] text-slate-600 dark:text-slate-400">
+                      Build a customized 5-6 exercise progressive gym routine or upload your trainer&apos;s chart to access today&apos;s workout at the gym.
+                    </p>
+                    <button
+                      type="button"
+                      onClick={() => setIsExerciseModalOpen(true)}
+                      className="w-full h-10 px-3 rounded-2xl bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-xs active:scale-98 transition-all"
+                    >
+                      <TrendingUp className="w-3.5 h-3.5" />
+                      <span>Build or Upload Gym Routine</span>
+                    </button>
+                  </>
+                )}
+              </div>
+
               {/* 1-Tap Quick Frequent Foods */}
               <QuickFoodShortcuts
                 onQuickAdd={handleQuickAddFood}
@@ -595,6 +695,19 @@ export default function Home() {
                   </button>
                 </div>
               )}
+
+              {/* Sticky Quick-Log Floating Action Button (Always Accessible Without Scrolling) */}
+              <StickyQuickLogFab
+                onOpenFoodLogger={() => handleOpenLoggerForMeal('lunch')}
+                onQuickLogWater={() =>
+                  handleUpdateWater(Math.min((activeLog.waterConsumedMl || 0) + 250, 10000))
+                }
+                onOpenGymWorkout={() => {
+                  setSelectedGymDayIdx(todayWorkoutDayIndex !== -1 ? todayWorkoutDayIndex : 0);
+                  setIsExerciseModalOpen(true);
+                }}
+                currentWaterMl={activeLog.waterConsumedMl || 0}
+              />
             </div>
           )}
 
@@ -694,10 +807,16 @@ export default function Home() {
         {/* Exercise & Form Guide Modal */}
         <ExerciseGuideModal
           isOpen={isExerciseModalOpen}
-          onClose={() => setIsExerciseModalOpen(false)}
+          onClose={() => {
+            setIsExerciseModalOpen(false);
+            if (currentUser) {
+              setActiveWorkoutProgram(loadActiveWorkoutProgram(currentUser.id));
+            }
+          }}
           userProfile={userProfile}
           onLogExercise={handleLogExercise}
           onLogWorkout={handleLogWorkout}
+          initialSelectedDayIndex={selectedGymDayIdx}
         />
       </div>
     </div>

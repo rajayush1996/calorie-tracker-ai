@@ -418,15 +418,15 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({
           {/* Submit Button */}
           <button
             type="submit"
-            className={`w-full py-3 rounded-2xl font-bold text-xs flex items-center justify-center gap-1.5 transition-all shadow-xs ${
+            className={`w-full h-11 rounded-2xl font-bold text-xs flex items-center justify-center gap-1.5 transition-all shadow-xs ${
               isSaved
-                ? 'bg-emerald-600 text-white'
+                ? 'bg-emerald-600 text-white shadow-2xs'
                 : 'bg-emerald-500 hover:bg-emerald-600 text-white active:scale-98'
             }`}
           >
             {isSaved ? (
               <>
-                <Check className="w-4 h-4" /> Profile Updated!
+                <Check className="w-4 h-4 stroke-[2.5]" /> Profile Updated!
               </>
             ) : (
               'Save Profile & Targets'

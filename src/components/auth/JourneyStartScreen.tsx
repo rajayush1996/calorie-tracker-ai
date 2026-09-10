@@ -223,7 +223,7 @@ export const JourneyStartScreen: React.FC<JourneyStartScreenProps> = ({ onAuthen
 
             <button
               type="submit"
-              className="w-full py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white font-bold text-xs shadow-sm shadow-emerald-500/20 flex items-center justify-center gap-1.5 active:scale-98 transition-all"
+              className="w-full h-11 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white font-bold text-xs shadow-sm shadow-emerald-500/20 flex items-center justify-center gap-1.5 active:scale-98 transition-all"
             >
               <span>{isSignUp ? 'Enter Phase 1 Calibration' : 'Access My Diary'}</span>
               <ArrowRight className="w-3.5 h-3.5" />

@@ -92,77 +92,86 @@ Return ONLY a valid JSON object matching this schema:
     }
 
     // Smart heuristic extractor for uploaded text/chart
-    const fallbackPlan: DietPlan = {
-      id: `plan-uploaded-${Date.now()}`,
-      createdAt: new Date().toISOString(),
-      dietType: 'veg',
-      targetCalories,
-      targetProteinG,
-      pantryItems: ['Imported Diet Plan'],
-      scheduleDescription: 'Custom schedule from uploaded document',
-      summaryNotes: `Diet plan imported from ${fileName || 'your document'}. Ready for daily tracking!`,
-      projectedWeeklyFatLossKg: 0.45,
-      meals: [
-        {
-          mealType: 'meal_1',
-          time: '11:30 AM',
-          title: 'Meal 1 (First Meal / Brunch)',
-          items: [
-            {
-              name: 'Oats with Milk & Banana or 2 Parathas with Curd',
-              portion: '1 bowl (~250g)',
-              calories: Math.round(targetCalories * 0.3),
-              proteinG: Math.round(targetProteinG * 0.28),
-              carbsG: 55,
-              fatG: 12,
-            },
-          ],
-          totalCalories: Math.round(targetCalories * 0.3),
-          proteinG: Math.round(targetProteinG * 0.28),
-          tips: 'Energizing first meal high in slow-digesting carbs and protein.',
-        },
-        {
-          mealType: 'meal_2',
-          time: '4:00 PM',
-          title: 'Meal 2 (Mid-Day Sustenance)',
-          items: [
-            {
-              name: 'Paneer / Soya / Boiled Eggs with Sprouts or Roti',
-              portion: '1 serving (~200g)',
-              calories: Math.round(targetCalories * 0.35),
-              proteinG: Math.round(targetProteinG * 0.38),
-              carbsG: 45,
-              fatG: 15,
-            },
-          ],
-          totalCalories: Math.round(targetCalories * 0.35),
-          proteinG: Math.round(targetProteinG * 0.38),
-          tips: 'Sustained energy and muscle recovery.',
-        },
-        {
-          mealType: 'meal_3',
-          time: '9:00 PM',
-          title: 'Meal 3 (Evening Dinner)',
-          items: [
-            {
-              name: 'Roti with Dal, Vegetables & Fresh Salad',
-              portion: '2 rotis + 1 bowl dal + salad',
-              calories: Math.round(targetCalories * 0.35),
-              proteinG: Math.round(targetProteinG * 0.34),
-              carbsG: 50,
-              fatG: 14,
-            },
-          ],
-          totalCalories: Math.round(targetCalories * 0.35),
-          proteinG: Math.round(targetProteinG * 0.34),
-          tips: 'Light, easy to digest dinner to support overnight recovery.',
-        },
-      ],
-    };
-
+    const fallbackPlan = parseHeuristicDietDoc({ fileText, fileName, targetCalories, targetProteinG });
     return NextResponse.json(fallbackPlan);
   } catch (error: any) {
     console.error('Error in parse-diet-doc route:', error);
     return NextResponse.json({ error: error.message || 'Internal Server Error' }, { status: 500 });
   }
+}
+
+export function parseHeuristicDietDoc(params: {
+  fileText: string;
+  fileName?: string;
+  targetCalories?: number;
+  targetProteinG?: number;
+}): DietPlan {
+  const { fileName, targetCalories = 2000, targetProteinG = 130 } = params;
+  return {
+    id: `plan-uploaded-${Date.now()}`,
+    createdAt: new Date().toISOString(),
+    dietType: 'veg',
+    targetCalories,
+    targetProteinG,
+    pantryItems: ['Imported Diet Plan'],
+    scheduleDescription: 'Custom schedule from uploaded document',
+    summaryNotes: `Diet plan imported from ${fileName || 'your document'}. Ready for daily tracking!`,
+    projectedWeeklyFatLossKg: 0.45,
+    meals: [
+      {
+        mealType: 'meal_1',
+        time: '11:30 AM',
+        title: 'Meal 1 (First Meal / Brunch)',
+        items: [
+          {
+            name: 'Oats with Milk & Banana or 2 Parathas with Curd',
+            portion: '1 bowl (~250g)',
+            calories: Math.round(targetCalories * 0.3),
+            proteinG: Math.round(targetProteinG * 0.28),
+            carbsG: 55,
+            fatG: 12,
+          },
+        ],
+        totalCalories: Math.round(targetCalories * 0.3),
+        proteinG: Math.round(targetProteinG * 0.28),
+        tips: 'Energizing first meal high in slow-digesting carbs and protein.',
+      },
+      {
+        mealType: 'meal_2',
+        time: '4:00 PM',
+        title: 'Meal 2 (Mid-Day Sustenance)',
+        items: [
+          {
+            name: 'Paneer / Soya / Boiled Eggs with Sprouts or Roti',
+            portion: '1 serving (~200g)',
+            calories: Math.round(targetCalories * 0.35),
+            proteinG: Math.round(targetProteinG * 0.38),
+            carbsG: 45,
+            fatG: 15,
+          },
+        ],
+        totalCalories: Math.round(targetCalories * 0.35),
+        proteinG: Math.round(targetProteinG * 0.38),
+        tips: 'Sustained energy and muscle recovery.',
+      },
+      {
+        mealType: 'meal_3',
+        time: '9:00 PM',
+        title: 'Meal 3 (Evening Dinner)',
+        items: [
+          {
+            name: 'Roti with Dal, Vegetables & Fresh Salad',
+            portion: '2 rotis + 1 bowl dal + salad',
+            calories: Math.round(targetCalories * 0.35),
+            proteinG: Math.round(targetProteinG * 0.34),
+            carbsG: 50,
+            fatG: 14,
+          },
+        ],
+        totalCalories: Math.round(targetCalories * 0.35),
+        proteinG: Math.round(targetProteinG * 0.34),
+        tips: 'Light, easy to digest dinner to support overnight recovery.',
+      },
+    ],
+  };
 }

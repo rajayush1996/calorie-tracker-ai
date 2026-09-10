@@ -156,7 +156,7 @@ export const CommunityTab: React.FC<CommunityTabProps> = ({ currentUser, userPro
 
           <button
             onClick={() => setIsCreateModalOpen(true)}
-            className="px-3 py-2 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white font-bold text-xs shadow-xs flex items-center gap-1.5 active:scale-95 transition-all shrink-0"
+            className="h-10 px-3.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white font-bold text-xs shadow-xs inline-flex items-center justify-center gap-1.5 active:scale-95 transition-all shrink-0"
           >
             <Plus className="w-3.5 h-3.5" />
             <span>Share Story</span>
@@ -449,13 +449,13 @@ export const CommunityTab: React.FC<CommunityTabProps> = ({ currentUser, userPro
                 <button
                   type="button"
                   onClick={() => setIsCreateModalOpen(false)}
-                  className="py-2.5 px-4 rounded-xl border border-slate-200 text-slate-600 font-bold text-xs hover:bg-slate-50"
+                  className="h-11 px-4 rounded-2xl border border-slate-200 text-slate-600 font-bold text-xs hover:bg-slate-50 flex items-center justify-center transition-colors"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white font-bold text-xs shadow-md shadow-emerald-500/20 active:scale-98 transition-all"
+                  className="flex-1 h-11 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white font-bold text-xs shadow-md shadow-emerald-500/20 active:scale-98 transition-all flex items-center justify-center gap-1.5"
                 >
                   Publish Story to Community
                 </button>

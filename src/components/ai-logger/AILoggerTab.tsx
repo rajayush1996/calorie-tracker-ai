@@ -418,7 +418,7 @@ export const AILoggerTab: React.FC<AILoggerTabProps> = ({
               type="button"
               onClick={() => fileInputRef.current?.click()}
               disabled={isAnalyzingPhoto || isLoading}
-              className="h-11 px-3 rounded-2xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800/80 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-bold text-xs flex items-center justify-center gap-2 border border-slate-200/60 dark:border-slate-700/60 transition-all active:scale-98 disabled:opacity-50"
+              className="h-11 px-3 rounded-2xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800/80 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-bold text-xs flex items-center justify-center gap-2 border border-slate-200/60 dark:border-slate-700/60 transition-all active:scale-98 disabled:opacity-60 disabled:cursor-not-allowed"
               title="Snap photo of plate"
             >
               {isAnalyzingPhoto ? (
@@ -603,7 +603,7 @@ export const AILoggerTab: React.FC<AILoggerTabProps> = ({
                 value={correctionSentence}
                 onChange={(e) => setCorrectionSentence(e.target.value)}
                 placeholder="e.g. Change to 3 rotis, remove ghee..."
-                className="flex-1 p-2 text-xs rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                className="flex-1 h-10 px-3 text-xs rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-emerald-500"
                 onKeyDown={(e) => {
                   if (e.key === 'Enter') handleRefine();
                 }}
@@ -611,7 +611,7 @@ export const AILoggerTab: React.FC<AILoggerTabProps> = ({
               <button
                 onClick={handleRefine}
                 disabled={isRefining || !correctionSentence.trim()}
-                className="px-3 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs rounded-xl flex items-center gap-1 shrink-0 active:scale-95 disabled:opacity-50 transition-all shadow-xs"
+                className="h-10 px-3.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl flex items-center justify-center gap-1 shrink-0 active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed transition-all shadow-xs"
               >
                 {isRefining ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : 'Update'}
               </button>

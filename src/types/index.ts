@@ -186,6 +186,7 @@ export interface CommunityPost {
 export interface ExerciseItem {
   id: string;
   name: string;
+  exerciseType?: string;
   category: 'chest' | 'back' | 'legs' | 'core' | 'cardio';
   targetMuscle: string;
   recommendedSets: string;
@@ -224,6 +225,7 @@ export interface WorkoutPlan {
 export interface ProgramExercise {
   id: string;
   name: string;
+  exerciseType?: string;
   category: 'chest' | 'back' | 'legs' | 'core' | 'cardio';
   targetMuscle: string;
   sets: number;

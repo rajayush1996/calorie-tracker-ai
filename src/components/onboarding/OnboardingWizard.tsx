@@ -245,7 +245,7 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = ({
             <button
               type="button"
               onClick={() => setStep(2)}
-              className="w-full mt-4 py-3 rounded-2xl bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-xs shadow-md shadow-emerald-500/20 flex items-center justify-center gap-2 active:scale-98 transition-all"
+              className="w-full mt-4 h-11 rounded-2xl bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-xs shadow-md shadow-emerald-500/20 flex items-center justify-center gap-2 active:scale-98 transition-all"
             >
               <span>Next: Body Measurements</span>
               <ArrowRight className="w-4 h-4" />
@@ -346,14 +346,15 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = ({
               <button
                 type="button"
                 onClick={() => setStep(1)}
-                className="py-3 px-4 rounded-2xl border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 font-bold text-xs"
+                className="w-12 h-11 rounded-2xl border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 flex items-center justify-center hover:bg-slate-50 dark:hover:bg-slate-800/60 active:scale-95 transition-all shrink-0"
+                aria-label="Back"
               >
                 <ArrowLeft className="w-4 h-4" />
               </button>
               <button
                 type="button"
                 onClick={() => setStep(3)}
-                className="flex-1 py-3 rounded-2xl bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-xs shadow-md shadow-emerald-500/20 flex items-center justify-center gap-2"
+                className="flex-1 h-11 rounded-2xl bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-xs shadow-md shadow-emerald-500/20 flex items-center justify-center gap-2 active:scale-98 transition-all"
               >
                 <span>Next: Target & Speed</span>
                 <ArrowRight className="w-4 h-4" />
@@ -498,14 +499,15 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = ({
               <button
                 type="button"
                 onClick={() => setStep(2)}
-                className="py-3 px-4 rounded-2xl border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 font-bold text-xs"
+                className="w-12 h-11 rounded-2xl border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 flex items-center justify-center hover:bg-slate-50 dark:hover:bg-slate-800/60 active:scale-95 transition-all shrink-0"
+                aria-label="Back"
               >
                 <ArrowLeft className="w-4 h-4" />
               </button>
               <button
                 type="button"
                 onClick={() => setStep(4)}
-                className="flex-1 py-3 rounded-2xl bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-xs shadow-md shadow-emerald-500/20 flex items-center justify-center gap-2"
+                className="flex-1 h-11 rounded-2xl bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-xs shadow-md shadow-emerald-500/20 flex items-center justify-center gap-2 active:scale-98 transition-all"
               >
                 <span>Review Blueprint</span>
                 <ArrowRight className="w-4 h-4" />
@@ -604,14 +606,15 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = ({
               <button
                 type="button"
                 onClick={() => setStep(3)}
-                className="py-3 px-4 rounded-2xl border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 font-bold text-xs"
+                className="w-12 h-11 rounded-2xl border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 flex items-center justify-center hover:bg-slate-50 dark:hover:bg-slate-800/60 active:scale-95 transition-all shrink-0"
+                aria-label="Back"
               >
                 <ArrowLeft className="w-4 h-4" />
               </button>
               <button
                 type="button"
                 onClick={handleFinish}
-                className="flex-1 py-3 rounded-2xl bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-100 text-white dark:text-slate-900 font-black text-xs shadow-md flex items-center justify-center gap-2 active:scale-98 transition-all"
+                className="flex-1 h-11 rounded-2xl bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-100 text-white dark:text-slate-900 font-black text-xs shadow-md flex items-center justify-center gap-2 active:scale-98 transition-all"
               >
                 <span>Start Tracking My Calories</span>
                 <ArrowRight className="w-4 h-4" />

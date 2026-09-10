@@ -159,7 +159,7 @@ export const RescueModal: React.FC<RescueModalProps> = ({
                   value={cravingInput}
                   onChange={(e) => setCravingInput(e.target.value)}
                   placeholder="e.g. Samosa, ice cream, gulab jamun..."
-                  className="flex-1 p-2.5 text-xs rounded-xl bg-slate-50 border border-slate-200 text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
+                  className="flex-1 h-10 px-3 text-xs rounded-xl bg-slate-50 border border-slate-200 text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
                   onKeyDown={(e) => {
                     if (e.key === 'Enter') handleSwapCraving();
                   }}
@@ -168,7 +168,7 @@ export const RescueModal: React.FC<RescueModalProps> = ({
                   type="button"
                   onClick={() => handleSwapCraving()}
                   disabled={cravingLoading || !cravingInput.trim()}
-                  className="px-3 py-2 bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-xs rounded-xl active:scale-95 disabled:opacity-50 transition-all shadow-xs shrink-0 flex items-center gap-1"
+                  className="h-10 px-3.5 bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-xs rounded-xl active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed transition-all shadow-xs shrink-0 flex items-center justify-center gap-1.5"
                 >
                   {cravingLoading ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <Zap className="w-3.5 h-3.5" />}
                   <span>Find Swap</span>
@@ -258,7 +258,7 @@ export const RescueModal: React.FC<RescueModalProps> = ({
                   value={cheatInput}
                   onChange={(e) => setCheatInput(e.target.value)}
                   placeholder="e.g. 4 slices pizza, pasta, and 1 beer at dinner..."
-                  className="flex-1 p-2.5 text-xs rounded-xl bg-slate-50 border border-slate-200 text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-rose-500/50"
+                  className="flex-1 h-10 px-3 text-xs rounded-xl bg-slate-50 border border-slate-200 text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-rose-500/50"
                   onKeyDown={(e) => {
                     if (e.key === 'Enter') handleDamageControl();
                   }}
@@ -267,7 +267,7 @@ export const RescueModal: React.FC<RescueModalProps> = ({
                   type="button"
                   onClick={() => handleDamageControl()}
                   disabled={cheatLoading || !cheatInput.trim()}
-                  className="px-3 py-2 bg-rose-500 hover:bg-rose-600 text-white font-bold text-xs rounded-xl active:scale-95 disabled:opacity-50 transition-all shadow-xs shrink-0 flex items-center gap-1"
+                  className="h-10 px-3.5 bg-rose-500 hover:bg-rose-600 text-white font-bold text-xs rounded-xl active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed transition-all shadow-xs shrink-0 flex items-center justify-center gap-1.5"
                 >
                   {cheatLoading ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <ShieldAlert className="w-3.5 h-3.5" />}
                   <span>Rescue Me</span>
