@@ -57,9 +57,11 @@ export const AILoggerTab: React.FC<AILoggerTabProps> = ({
   const [assumptions, setAssumptions] = useState<string[]>([]);
   const [clarification, setClarification] = useState<string | null>(null);
   const [refineSummary, setRefineSummary] = useState<string | null>(null);
+  const [lastLoggedMeal, setLastLoggedMeal] = useState<MealLog | null>(null);
   const [isSaved, setIsSaved] = useState(false);
 
-  const handleParse = async (sentenceToUse?: string) => {
+  // Single direct action: Log meal internally calculates and saves in 1 step!
+  const handleDirectLog = async (sentenceToUse?: string) => {
     const text = sentenceToUse || inputSentence;
     if (!text.trim()) return;
 
@@ -70,11 +72,42 @@ export const AILoggerTab: React.FC<AILoggerTabProps> = ({
 
     try {
       const res = await parseMealSentence(text, userProfile.apiKey, userProfile.aiProvider);
+      if (!res.items || res.items.length === 0) {
+        throw new Error('Could not identify food items. Please describe what you ate with approximate portions.');
+      }
+
+      const totCals = res.items.reduce((sum, it) => sum + (it.calories || 0), 0);
+      const totProt = res.items.reduce((sum, it) => sum + (it.proteinG || 0), 0);
+      const totCarbs = res.items.reduce((sum, it) => sum + (it.carbsG || 0), 0);
+      const totFat = res.items.reduce((sum, it) => sum + (it.fatG || 0), 0);
+
+      const newMeal: MealLog = {
+        id: `meal-${Date.now()}`,
+        date: logDate,
+        mealType,
+        items: res.items,
+        totalCalories: totCals,
+        totalProtein: totProt,
+        totalCarbs: totCarbs,
+        totalFat: totFat,
+        rawInput: text,
+        assumptions: res.assumptions || [],
+        createdAt: new Date().toISOString(),
+      };
+
+      // Automatically commit to log
+      onMealSaved(newMeal);
+
+      // Display breakdown information directly below
+      setLastLoggedMeal(newMeal);
       setParsedItems(res.items);
       setAssumptions(res.assumptions || []);
       setClarification(res.clarification || null);
+      setInputSentence('');
+      setPhotoPreview(null);
+      setIsSaved(true);
     } catch (err: any) {
-      setErrorMessage(err.message || 'Failed to calculate meal');
+      setErrorMessage(err.message || 'Failed to log meal');
     } finally {
       setIsLoading(false);
     }
@@ -95,9 +128,35 @@ export const AILoggerTab: React.FC<AILoggerTabProps> = ({
 
       try {
         const res = await parseMealImage(base64, userProfile.apiKey, userProfile.aiProvider);
+        if (!res.items || res.items.length === 0) {
+          throw new Error('Could not identify food on plate. Please describe what you ate.');
+        }
+
+        const totCals = res.items.reduce((sum, it) => sum + (it.calories || 0), 0);
+        const totProt = res.items.reduce((sum, it) => sum + (it.proteinG || 0), 0);
+        const totCarbs = res.items.reduce((sum, it) => sum + (it.carbsG || 0), 0);
+        const totFat = res.items.reduce((sum, it) => sum + (it.fatG || 0), 0);
+
+        const newMeal: MealLog = {
+          id: `meal-${Date.now()}`,
+          date: logDate,
+          mealType,
+          items: res.items,
+          totalCalories: totCals,
+          totalProtein: totProt,
+          totalCarbs: totCarbs,
+          totalFat: totFat,
+          rawInput: res.plateSummary || 'Photo plate recognition',
+          assumptions: res.assumptions || [],
+          createdAt: new Date().toISOString(),
+        };
+
+        onMealSaved(newMeal);
+        setLastLoggedMeal(newMeal);
         setParsedItems(res.items);
         setAssumptions(res.assumptions || []);
-        setInputSentence(res.plateSummary || 'Meal from photo');
+        setPhotoPreview(null);
+        setIsSaved(true);
       } catch (err: any) {
         setErrorMessage(err.message || 'Failed to analyze plate photo');
       } finally {
@@ -121,21 +180,59 @@ export const AILoggerTab: React.FC<AILoggerTabProps> = ({
       if (res.assumptions) {
         setAssumptions(res.assumptions);
       }
+
+      // Update the active meal in the daily log
+      if (lastLoggedMeal) {
+        const totC = res.items.reduce((s, it) => s + (it.calories || 0), 0);
+        const totP = res.items.reduce((s, it) => s + (it.proteinG || 0), 0);
+        const totCb = res.items.reduce((s, it) => s + (it.carbsG || 0), 0);
+        const totF = res.items.reduce((s, it) => s + (it.fatG || 0), 0);
+
+        const updatedMeal: MealLog = {
+          ...lastLoggedMeal,
+          items: res.items,
+          totalCalories: totC,
+          totalProtein: totP,
+          totalCarbs: totCb,
+          totalFat: totF,
+          assumptions: res.assumptions || lastLoggedMeal.assumptions,
+        };
+        onMealSaved(updatedMeal);
+        setLastLoggedMeal(updatedMeal);
+      }
     } catch (err: any) {
-      setErrorMessage(err.message || 'Failed to refine meal');
+      setErrorMessage(err.message || 'Failed to update meal');
     } finally {
       setIsRefining(false);
     }
   };
 
   const handleDeleteItem = (id: string) => {
-    setParsedItems((prev) => prev.filter((it) => it.id !== id));
+    const updated = parsedItems.filter((it) => it.id !== id);
+    setParsedItems(updated);
+    if (lastLoggedMeal) {
+      const totC = updated.reduce((s, it) => s + (it.calories || 0), 0);
+      const totP = updated.reduce((s, it) => s + (it.proteinG || 0), 0);
+      const totCb = updated.reduce((s, it) => s + (it.carbsG || 0), 0);
+      const totF = updated.reduce((s, it) => s + (it.fatG || 0), 0);
+      const updatedMeal: MealLog = {
+        ...lastLoggedMeal,
+        items: updated,
+        totalCalories: totC,
+        totalProtein: totP,
+        totalCarbs: totCb,
+        totalFat: totF,
+      };
+      onMealSaved(updatedMeal);
+      setLastLoggedMeal(updatedMeal);
+    }
   };
 
   const handleResetDraft = () => {
     setInputSentence('');
     setCorrectionSentence('');
     setParsedItems([]);
+    setLastLoggedMeal(null);
     setPhotoPreview(null);
     setAssumptions([]);
     setClarification(null);
@@ -151,34 +248,6 @@ export const AILoggerTab: React.FC<AILoggerTabProps> = ({
   const totalProtein = parsedItems.reduce((sum, it) => sum + (it.proteinG || 0), 0);
   const totalCarbs = parsedItems.reduce((sum, it) => sum + (it.carbsG || 0), 0);
   const totalFat = parsedItems.reduce((sum, it) => sum + (it.fatG || 0), 0);
-
-  const handleSaveToLog = () => {
-    if (parsedItems.length === 0) return;
-
-    const newMeal: MealLog = {
-      id: `meal-${Date.now()}`,
-      date: logDate,
-      mealType,
-      items: parsedItems,
-      totalCalories,
-      totalProtein,
-      totalCarbs,
-      totalFat,
-      rawInput: inputSentence || (photoPreview ? 'Photo plate recognition' : undefined),
-      assumptions,
-      createdAt: new Date().toISOString(),
-    };
-
-    onMealSaved(newMeal);
-    setIsSaved(true);
-
-    setTimeout(() => {
-      setParsedItems([]);
-      setInputSentence('');
-      setPhotoPreview(null);
-      setIsSaved(false);
-    }, 1800);
-  };
 
   const lifestyleMeals: { id: MealType; label: string }[] = [
     { id: 'meal_1', label: 'Meal 1 (Brunch / First)' },
@@ -352,17 +421,20 @@ export const AILoggerTab: React.FC<AILoggerTabProps> = ({
             </button>
 
             <button
-              onClick={() => handleParse()}
+              onClick={() => handleDirectLog()}
               disabled={isLoading || !inputSentence.trim()}
-              className="inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-xs shadow-2xs active:scale-98 disabled:opacity-50 disabled:pointer-events-none transition-all"
+              className="inline-flex items-center justify-center gap-1.5 px-5 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white font-black text-xs shadow-md active:scale-98 disabled:opacity-50 disabled:pointer-events-none transition-all"
             >
               {isLoading ? (
                 <>
                   <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-                  Calculating...
+                  Logging Meal...
                 </>
               ) : (
-                'Calculate Nutrition'
+                <>
+                  <Check className="w-3.5 h-3.5 stroke-[2.5]" />
+                  <span>Log Meal</span>
+                </>
               )}
             </button>
           </div>
@@ -377,23 +449,28 @@ export const AILoggerTab: React.FC<AILoggerTabProps> = ({
         </div>
       )}
 
-      {/* Parsed Result Display */}
-      {parsedItems.length > 0 && (
-        <div className="bg-white dark:bg-slate-900 rounded-3xl p-5 border border-slate-100 dark:border-slate-800 shadow-sm space-y-4">
+      {/* Logged Meal Breakdown Information */}
+      {lastLoggedMeal && (
+        <div className="bg-white dark:bg-slate-900 rounded-3xl p-5 border border-emerald-200 dark:border-emerald-900/50 shadow-sm space-y-4 animate-in fade-in slide-in-from-top-2 duration-300">
           <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
-            <div>
-              <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
-                Nutritional Breakdown
-              </span>
-              <h3 className="text-lg font-black text-slate-900 dark:text-white capitalize">
-                Meal Summary
-              </h3>
+            <div className="flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-full bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
+                <Check className="w-4 h-4 stroke-[3]" />
+              </div>
+              <div>
+                <span className="text-[10px] font-black uppercase tracking-wider text-emerald-600 dark:text-emerald-400 block">
+                  Logged to {lastLoggedMeal.mealType.replace('_', ' ').toUpperCase()}
+                </span>
+                <h3 className="text-sm font-black text-slate-900 dark:text-white capitalize">
+                  {lastLoggedMeal.rawInput || 'Meal Breakdown'}
+                </h3>
+              </div>
             </div>
             <div className="text-right">
               <span className="text-2xl font-black text-slate-900 dark:text-white">
-                {totalCalories}
+                {lastLoggedMeal.totalCalories}
               </span>
-              <span className="text-xs text-slate-400 block -mt-1">total kcal</span>
+              <span className="text-[10px] text-slate-400 block -mt-1">kcal added</span>
             </div>
           </div>
 
@@ -401,26 +478,26 @@ export const AILoggerTab: React.FC<AILoggerTabProps> = ({
           <div className="grid grid-cols-4 gap-2 text-center">
             <div className="bg-blue-50 dark:bg-blue-950/30 border border-blue-100 dark:border-blue-900/40 rounded-xl p-2">
               <div className="text-[10px] font-semibold text-blue-600 dark:text-blue-400">PROTEIN</div>
-              <div className="text-sm font-bold text-slate-800 dark:text-slate-200">{totalProtein}g</div>
+              <div className="text-sm font-bold text-slate-800 dark:text-slate-200">{lastLoggedMeal.totalProtein}g</div>
             </div>
             <div className="bg-amber-50 dark:bg-amber-950/30 border border-amber-100 dark:border-amber-900/40 rounded-xl p-2">
               <div className="text-[10px] font-semibold text-amber-600 dark:text-amber-400">CARBS</div>
-              <div className="text-sm font-bold text-slate-800 dark:text-slate-200">{totalCarbs}g</div>
+              <div className="text-sm font-bold text-slate-800 dark:text-slate-200">{lastLoggedMeal.totalCarbs}g</div>
             </div>
             <div className="bg-purple-50 dark:bg-purple-950/30 border border-purple-100 dark:border-purple-900/40 rounded-xl p-2">
               <div className="text-[10px] font-semibold text-purple-600 dark:text-purple-400">FATS</div>
-              <div className="text-sm font-bold text-slate-800 dark:text-slate-200">{totalFat}g</div>
+              <div className="text-sm font-bold text-slate-800 dark:text-slate-200">{lastLoggedMeal.totalFat}g</div>
             </div>
             <div className="bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-100 dark:border-emerald-900/40 rounded-xl p-2">
               <div className="text-[10px] font-semibold text-emerald-600 dark:text-emerald-400">ITEMS</div>
-              <div className="text-sm font-bold text-slate-800 dark:text-slate-200">{parsedItems.length}</div>
+              <div className="text-sm font-bold text-slate-800 dark:text-slate-200">{lastLoggedMeal.items.length}</div>
             </div>
           </div>
 
           {/* Itemized List */}
           <div className="space-y-2">
             <div className="text-xs font-bold text-slate-700 dark:text-slate-300">Items Identified:</div>
-            {parsedItems.map((item) => (
+            {lastLoggedMeal.items.map((item) => (
               <div
                 key={item.id}
                 className="p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800 flex items-center justify-between gap-3 text-xs"
@@ -473,7 +550,7 @@ export const AILoggerTab: React.FC<AILoggerTabProps> = ({
           {assumptions.length > 0 && (
             <div className="p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/30 text-[11px] text-slate-500 dark:text-slate-400 space-y-1">
               <span className="font-bold text-slate-700 dark:text-slate-300 block">
-                Estimated Portions:
+                Portion Estimates Used:
               </span>
               <ul className="list-disc pl-4 space-y-0.5">
                 {assumptions.map((assump, i) => (
@@ -487,10 +564,10 @@ export const AILoggerTab: React.FC<AILoggerTabProps> = ({
           <div className="mt-4 pt-4 border-t border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/30 rounded-2xl p-3.5 border border-slate-200/80 dark:border-slate-800">
             <div className="flex items-center gap-1.5 text-xs font-bold text-slate-800 dark:text-slate-200 mb-1.5">
               <MessageSquareText className="w-3.5 h-3.5 text-emerald-600" />
-              <span>Adjust or Fine-Tune Portion</span>
+              <span>Adjust Logged Portion</span>
             </div>
             <p className="text-[11px] text-slate-500 dark:text-slate-400 mb-2">
-              Want to change anything? E.g., <em>"Make it 3 rotis without butter"</em> or <em>"Add 1 glass lassi"</em>.
+              Want to adjust? E.g., <em>"Make it 3 rotis without butter"</em> or <em>"Add 1 cup dahi"</em>.
             </p>
 
             <div className="flex gap-2">
@@ -521,28 +598,21 @@ export const AILoggerTab: React.FC<AILoggerTabProps> = ({
             )}
           </div>
 
-          {/* Action Buttons */}
-          <div className="pt-2 flex items-center gap-2">
+          {/* Action Row */}
+          <div className="pt-2 flex items-center justify-between border-t border-slate-100 dark:border-slate-800 text-xs">
+            <span className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
+              <Check className="w-3.5 h-3.5 stroke-[3]" />
+              <span>Added to today&apos;s food journal</span>
+            </span>
             <button
-              onClick={handleSaveToLog}
-              disabled={isSaved}
-              className={`flex-1 py-3 px-4 rounded-2xl font-bold text-xs flex items-center justify-center gap-2 transition-all shadow-sm ${
-                isSaved
-                  ? 'bg-emerald-600 text-white'
-                  : 'bg-emerald-500 hover:bg-emerald-600 text-white active:scale-98'
-              }`}
+              type="button"
+              onClick={() => {
+                setLastLoggedMeal(null);
+                setParsedItems([]);
+              }}
+              className="px-3 py-1 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 font-bold text-[11px] transition-colors"
             >
-              {isSaved ? (
-                <>
-                  <Check className="w-4 h-4" />
-                  Saved to Today's Food Log!
-                </>
-              ) : (
-                <>
-                  <Check className="w-4 h-4" />
-                  Log Meal ({totalCalories} kcal)
-                </>
-              )}
+              Done
             </button>
           </div>
         </div>

@@ -67,20 +67,30 @@ export const CalorieRing: React.FC<CalorieRingProps> = ({ consumed, profile }) =
           </div>
           <div className="flex items-baseline gap-1.5">
             <span className="text-3xl font-black tracking-tight text-slate-900 dark:text-white">
-              {remaining > 0 ? remaining.toLocaleString() : Math.abs(remaining).toLocaleString()}
+              {consumed.calories.toLocaleString()}
             </span>
             <span className="text-xs font-bold text-slate-400 dark:text-slate-500">
-              {remaining >= 0
-                ? profile.goal === 'muscle_gain' || profile.goal === 'weight_gain'
-                  ? 'kcal to surplus'
-                  : 'kcal left'
-                : 'kcal over budget'}
+              / {target.toLocaleString()} kcal
             </span>
           </div>
 
           <div className="flex items-center gap-2 mt-2">
             <span className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">
-              Eaten: <strong className="text-slate-800 dark:text-slate-200">{consumed.calories}</strong> / {target}
+              {remaining >= 0 ? (
+                <>
+                  <strong className="text-emerald-600 dark:text-emerald-400 font-bold">
+                    {remaining.toLocaleString()} kcal
+                  </strong>{' '}
+                  left
+                </>
+              ) : (
+                <>
+                  <strong className="text-rose-600 dark:text-rose-400 font-bold">
+                    {Math.abs(remaining).toLocaleString()} kcal
+                  </strong>{' '}
+                  over budget
+                </>
+              )}
             </span>
             <span className={`inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full ${
               remaining >= 0
@@ -91,10 +101,10 @@ export const CalorieRing: React.FC<CalorieRingProps> = ({ consumed, profile }) =
             }`}>
               <Flame className="w-2.5 h-2.5" />
               {remaining >= 0
-                ? 'On Target'
+                ? `${percent}% eaten`
                 : (profile.goal === 'muscle_gain' || profile.goal === 'weight_gain')
                 ? 'Surplus Reached'
-                : 'Over'}
+                : 'Over Target'}
             </span>
           </div>
         </div>
