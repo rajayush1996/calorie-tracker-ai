@@ -263,7 +263,7 @@ export function calculateMetabolicBlueprint(params: {
   let fatCalories = targetFatG * 9;
 
   // Carbs: Remaining calories to reach targetCalories
-  let remainingCalories = targetCalories - proteinCalories - fatCalories;
+  const remainingCalories = targetCalories - proteinCalories - fatCalories;
   let targetCarbsG = Math.round(remainingCalories / 4);
 
   // Keto adjustment

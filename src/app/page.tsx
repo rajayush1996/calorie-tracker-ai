@@ -256,7 +256,7 @@ export default function Home() {
     }
   };
 
-  const handleSaveMeal = (meal: MealLog) => {
+  const handleSaveMeal = (meal: MealLog, switchToDashboard: boolean = true) => {
     const targetDate = meal.date || selectedDate;
     const targetLog = allLogs[targetDate] || (targetDate === todayStr ? todayLog : {
       date: targetDate,
@@ -264,7 +264,12 @@ export default function Home() {
       meals: [],
     });
 
-    const updatedMeals = [...(targetLog.meals || []), meal];
+    const existingIndex = (targetLog.meals || []).findIndex((m) => m.id === meal.id);
+    const updatedMeals =
+      existingIndex >= 0
+        ? targetLog.meals.map((m) => (m.id === meal.id ? meal : m))
+        : [...(targetLog.meals || []), meal];
+
     const updated: DailyLog = {
       ...targetLog,
       meals: updatedMeals,
@@ -280,7 +285,9 @@ export default function Home() {
     }
 
     setSelectedDate(targetDate);
-    setActiveTab('dashboard');
+    if (switchToDashboard) {
+      setActiveTab('dashboard');
+    }
   };
 
   const handleDeleteMealItem = (mealId: string, itemId: string) => {
@@ -311,6 +318,95 @@ export default function Home() {
     if (selectedDate === todayStr) {
       setTodayLog(updated);
       saveTodayLog(updated, currentUser.id);
+    }
+  };
+
+  const handleUpdateMealItem = (
+    mealId: string,
+    updatedItem: FoodItem,
+    targetMealType?: MealType
+  ) => {
+    const currentMeals = activeLog.meals || [];
+    const sourceMeal = currentMeals.find((m) => m.id === mealId);
+    if (!sourceMeal) return;
+
+    const sourceMealType = sourceMeal.mealType;
+    const destMealType = targetMealType || sourceMealType;
+
+    let updatedMeals: MealLog[];
+
+    if (destMealType === sourceMealType) {
+      // Same meal category: update the item in place
+      updatedMeals = currentMeals.map((meal) => {
+        if (meal.id !== mealId) return meal;
+        const newItems = meal.items.map((it) => (it.id === updatedItem.id ? updatedItem : it));
+        return {
+          ...meal,
+          items: newItems,
+          totalCalories: newItems.reduce((s, it) => s + (it.calories || 0), 0),
+          totalProtein: newItems.reduce((s, it) => s + (it.proteinG || 0), 0),
+          totalCarbs: newItems.reduce((s, it) => s + (it.carbsG || 0), 0),
+          totalFat: newItems.reduce((s, it) => s + (it.fatG || 0), 0),
+        };
+      });
+    } else {
+      // Meal category changed: move item from source meal to destination meal
+      const remainingItems = sourceMeal.items.filter((it) => it.id !== updatedItem.id);
+      const mealsWithoutSource = currentMeals.filter((m) => m.id !== mealId);
+
+      if (remainingItems.length > 0) {
+        mealsWithoutSource.push({
+          ...sourceMeal,
+          items: remainingItems,
+          totalCalories: remainingItems.reduce((s, it) => s + (it.calories || 0), 0),
+          totalProtein: remainingItems.reduce((s, it) => s + (it.proteinG || 0), 0),
+          totalCarbs: remainingItems.reduce((s, it) => s + (it.carbsG || 0), 0),
+          totalFat: remainingItems.reduce((s, it) => s + (it.fatG || 0), 0),
+        });
+      }
+
+      const existingDestMeal = mealsWithoutSource.find((m) => m.mealType === destMealType);
+      if (existingDestMeal) {
+        updatedMeals = mealsWithoutSource.map((m) => {
+          if (m.id !== existingDestMeal.id) return m;
+          const mergedItems = [...m.items, updatedItem];
+          return {
+            ...m,
+            items: mergedItems,
+            totalCalories: mergedItems.reduce((s, it) => s + (it.calories || 0), 0),
+            totalProtein: mergedItems.reduce((s, it) => s + (it.proteinG || 0), 0),
+            totalCarbs: mergedItems.reduce((s, it) => s + (it.carbsG || 0), 0),
+            totalFat: mergedItems.reduce((s, it) => s + (it.fatG || 0), 0),
+          };
+        });
+      } else {
+        const newMeal: MealLog = {
+          id: `meal-${Date.now()}`,
+          date: selectedDate,
+          mealType: destMealType,
+          items: [updatedItem],
+          totalCalories: updatedItem.calories || 0,
+          totalProtein: updatedItem.proteinG || 0,
+          totalCarbs: updatedItem.carbsG || 0,
+          totalFat: updatedItem.fatG || 0,
+          createdAt: new Date().toISOString(),
+        };
+        updatedMeals = [...mealsWithoutSource, newMeal];
+      }
+    }
+
+    const updatedLog: DailyLog = {
+      ...activeLog,
+      meals: updatedMeals,
+    };
+
+    const updatedAll = { ...allLogs, [selectedDate]: updatedLog };
+    setAllLogs(updatedAll);
+    saveAllDailyLogs(updatedAll, currentUser.id);
+
+    if (selectedDate === todayStr) {
+      setTodayLog(updatedLog);
+      saveTodayLog(updatedLog, currentUser.id);
     }
   };
 
@@ -619,6 +715,7 @@ export default function Home() {
                 yesterdayMeals={allLogs[getYesterdayDateString()]?.meals || []}
                 onOpenLoggerForMeal={handleOpenLoggerForMeal}
                 onDeleteMealItem={handleDeleteMealItem}
+                onUpdateMealItem={handleUpdateMealItem}
                 onCopyYesterdayMeal={handleCopyYesterdayMeal}
               />
 
@@ -731,6 +828,7 @@ export default function Home() {
               onSelectDate={setSelectedDate}
               userProfile={userProfile}
               onMealSaved={handleSaveMeal}
+              onViewDashboard={() => setActiveTab('dashboard')}
               onOpenRescue={(tab) => {
                 setRescueInitialTab(tab);
                 setIsRescueOpen(true);

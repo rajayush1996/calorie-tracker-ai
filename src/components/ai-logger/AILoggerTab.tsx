@@ -15,15 +15,21 @@ import {
   Calendar,
   X,
   RotateCcw,
+  Pencil,
+  Image as ImageIcon,
+  ImagePlus,
+  ArrowRight,
 } from 'lucide-react';
 import { getTodayDateString, getYesterdayDateString } from '@/utils/dateUtils';
+import { EditFoodModal } from '@/components/common/EditFoodModal';
 
 interface AILoggerTabProps {
   initialMealType?: MealType;
   selectedDate?: string;
   onSelectDate?: (date: string) => void;
   userProfile: UserProfile;
-  onMealSaved: (meal: MealLog) => void;
+  onMealSaved: (meal: MealLog, switchToDashboard?: boolean) => void;
+  onViewDashboard?: () => void;
   onOpenRescue?: (tab: 'craving' | 'cheat') => void;
 }
 
@@ -33,6 +39,7 @@ export const AILoggerTab: React.FC<AILoggerTabProps> = ({
   onSelectDate,
   userProfile,
   onMealSaved,
+  onViewDashboard,
   onOpenRescue,
 }) => {
   const [logDate, setLogDate] = useState<string>(selectedDate || getTodayDateString());
@@ -44,7 +51,9 @@ export const AILoggerTab: React.FC<AILoggerTabProps> = ({
   const [isRefining, setIsRefining] = useState(false);
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
   const [isAnalyzingPhoto, setIsAnalyzingPhoto] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const cameraInputRef = useRef<HTMLInputElement | null>(null);
+  const galleryInputRef = useRef<HTMLInputElement | null>(null);
+  const [editingItem, setEditingItem] = useState<FoodItem | null>(null);
 
   useEffect(() => {
     if (selectedDate) {
@@ -236,6 +245,35 @@ export const AILoggerTab: React.FC<AILoggerTabProps> = ({
       onMealSaved(updatedMeal);
       setLastLoggedMeal(updatedMeal);
     }
+  const handleSaveEditedItem = (updatedItem: FoodItem, targetMealType?: MealType) => {
+    // 1. Update parsedItems in state
+    const updatedParsed = parsedItems.map((it) => (it.id === updatedItem.id ? updatedItem : it));
+    setParsedItems(updatedParsed);
+
+    // 2. If already committed to daily log, update the saved meal
+    if (lastLoggedMeal) {
+      const updatedItems = lastLoggedMeal.items.map((it) => (it.id === updatedItem.id ? updatedItem : it));
+      const totC = updatedItems.reduce((s, it) => s + (it.calories || 0), 0);
+      const totP = updatedItems.reduce((s, it) => s + (it.proteinG || 0), 0);
+      const totCb = updatedItems.reduce((s, it) => s + (it.carbsG || 0), 0);
+      const totF = updatedItems.reduce((s, it) => s + (it.fatG || 0), 0);
+
+      const updatedMeal: MealLog = {
+        ...lastLoggedMeal,
+        mealType: targetMealType || lastLoggedMeal.mealType,
+        items: updatedItems,
+        totalCalories: totC,
+        totalProtein: totP,
+        totalCarbs: totCb,
+        totalFat: totF,
+      };
+
+      onMealSaved(updatedMeal);
+      setLastLoggedMeal(updatedMeal);
+      if (targetMealType && targetMealType !== mealType) {
+        setMealType(targetMealType);
+      }
+    }
   };
 
   const handleResetDraft = () => {
@@ -248,8 +286,11 @@ export const AILoggerTab: React.FC<AILoggerTabProps> = ({
     setClarification(null);
     setErrorMessage(null);
     setRefineSummary(null);
-    if (fileInputRef.current) {
-      fileInputRef.current.value = '';
+    if (cameraInputRef.current) {
+      cameraInputRef.current.value = '';
+    }
+    if (galleryInputRef.current) {
+      galleryInputRef.current.value = '';
     }
   };
 
@@ -401,9 +442,9 @@ export const AILoggerTab: React.FC<AILoggerTabProps> = ({
             className="w-full p-3.5 text-sm rounded-2xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 resize-none transition-all"
           />
 
-          {/* Hidden File Input for Camera OCR */}
+          {/* Hidden File Input for Camera Direct Snap */}
           <input
-            ref={fileInputRef}
+            ref={cameraInputRef}
             type="file"
             accept="image/*"
             capture="environment"
@@ -411,35 +452,58 @@ export const AILoggerTab: React.FC<AILoggerTabProps> = ({
             onChange={handlePhotoCapture}
           />
 
-          {/* Action Bar: Symmetric, Matched Height (h-11), Consistent Styling */}
-          <div className="grid grid-cols-2 gap-2.5 mt-2.5">
-            {/* Snap Plate Photo Button */}
-            <button
-              type="button"
-              onClick={() => fileInputRef.current?.click()}
-              disabled={isAnalyzingPhoto || isLoading}
-              className="h-11 px-3 rounded-2xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800/80 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-bold text-xs flex items-center justify-center gap-2 border border-slate-200/60 dark:border-slate-700/60 transition-all active:scale-98 disabled:opacity-60 disabled:cursor-not-allowed"
-              title="Snap photo of plate"
-            >
-              {isAnalyzingPhoto ? (
-                <>
-                  <RefreshCw className="w-4 h-4 animate-spin text-emerald-500" />
-                  <span>Analyzing...</span>
-                </>
-              ) : (
-                <>
-                  <Camera className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
-                  <span>Snap Photo</span>
-                </>
-              )}
-            </button>
+          {/* Hidden File Input for Gallery / Storage Upload */}
+          <input
+            ref={galleryInputRef}
+            type="file"
+            accept="image/*"
+            className="hidden"
+            onChange={handlePhotoCapture}
+          />
+
+          {/* Action Bar: Snap Camera, Upload Photo from Gallery, Log Meal */}
+          <div className="space-y-2 mt-2.5">
+            <div className="grid grid-cols-2 gap-2">
+              {/* Snap Plate Photo (Direct Camera) */}
+              <button
+                type="button"
+                onClick={() => cameraInputRef.current?.click()}
+                disabled={isAnalyzingPhoto || isLoading}
+                className="h-11 px-3 rounded-2xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800/80 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-bold text-xs flex items-center justify-center gap-1.5 border border-slate-200/60 dark:border-slate-700/60 transition-all active:scale-98 disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer"
+                title="Snap photo with camera"
+              >
+                {isAnalyzingPhoto ? (
+                  <>
+                    <RefreshCw className="w-3.5 h-3.5 animate-spin text-emerald-500" />
+                    <span className="truncate">Analyzing...</span>
+                  </>
+                ) : (
+                  <>
+                    <Camera className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                    <span>Camera</span>
+                  </>
+                )}
+              </button>
+
+              {/* Upload Photo from Gallery / Files */}
+              <button
+                type="button"
+                onClick={() => galleryInputRef.current?.click()}
+                disabled={isAnalyzingPhoto || isLoading}
+                className="h-11 px-3 rounded-2xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800/80 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-bold text-xs flex items-center justify-center gap-1.5 border border-slate-200/60 dark:border-slate-700/60 transition-all active:scale-98 disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer"
+                title="Upload plate photo from gallery or storage"
+              >
+                <ImageIcon className="w-4 h-4 text-blue-600 dark:text-blue-400 shrink-0" />
+                <span>Upload Photo</span>
+              </button>
+            </div>
 
             {/* Log Meal Button */}
             <button
               type="button"
               onClick={() => handleDirectLog()}
               disabled={isLoading || isAnalyzingPhoto || (!inputSentence.trim() && !justLogged)}
-              className={`h-11 px-4 rounded-2xl font-bold text-xs flex items-center justify-center gap-2 transition-all active:scale-98 ${
+              className={`w-full h-11 px-4 rounded-2xl font-bold text-xs flex items-center justify-center gap-2 transition-all active:scale-98 cursor-pointer ${
                 justLogged
                   ? 'bg-emerald-600 text-white shadow-xs'
                   : inputSentence.trim()
@@ -527,10 +591,16 @@ export const AILoggerTab: React.FC<AILoggerTabProps> = ({
             {lastLoggedMeal.items.map((item) => (
               <div
                 key={item.id}
-                className="p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800 flex items-center justify-between gap-3 text-xs"
+                className="p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800 flex items-center justify-between gap-3 text-xs group hover:bg-slate-100/70 dark:hover:bg-slate-800 transition-colors"
               >
-                <div className="flex-1">
-                  <div className="font-bold text-slate-900 dark:text-slate-100">{item.name}</div>
+                <div
+                  onClick={() => setEditingItem(item)}
+                  className="flex-1 cursor-pointer"
+                >
+                  <div className="font-bold text-slate-900 dark:text-slate-100 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors flex items-center gap-1.5">
+                    <span>{item.name}</span>
+                    <Pencil className="w-3 h-3 opacity-0 group-hover:opacity-60 text-slate-400 transition-opacity" />
+                  </div>
                   <div className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
                     {item.portionDescription} (~{item.weightG}g)
                   </div>
@@ -543,16 +613,25 @@ export const AILoggerTab: React.FC<AILoggerTabProps> = ({
                   </div>
                 </div>
 
-                <div className="flex items-center gap-2.5">
-                  <div className="text-right">
+                <div className="flex items-center gap-2">
+                  <div className="text-right mr-1">
                     <span className="font-extrabold text-slate-800 dark:text-slate-200">
                       {item.calories}
                     </span>
                     <span className="text-[10px] text-slate-400 block -mt-1">kcal</span>
                   </div>
                   <button
+                    type="button"
+                    onClick={() => setEditingItem(item)}
+                    className="p-1.5 text-slate-400 hover:text-emerald-600 dark:hover:text-emerald-400 rounded-lg hover:bg-emerald-50 dark:hover:bg-emerald-950/40 transition-colors cursor-pointer"
+                    title="Edit item"
+                  >
+                    <Pencil className="w-3.5 h-3.5" />
+                  </button>
+                  <button
+                    type="button"
                     onClick={() => handleDeleteItem(item.id)}
-                    className="p-1.5 text-slate-300 hover:text-rose-500 rounded-lg hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors"
+                    className="p-1.5 text-slate-300 hover:text-rose-500 rounded-lg hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors cursor-pointer"
                     title="Remove item"
                   >
                     <Trash2 className="w-3.5 h-3.5" />
@@ -657,6 +736,21 @@ export const AILoggerTab: React.FC<AILoggerTabProps> = ({
             <span>Clear current meal draft</span>
           </button>
         </div>
+      )}
+
+      {/* Edit Food Modal */}
+      {editingItem && (
+        <EditFoodModal
+          isOpen={Boolean(editingItem)}
+          onClose={() => setEditingItem(null)}
+          item={editingItem}
+          currentMealType={lastLoggedMeal?.mealType || mealType}
+          onSave={handleSaveEditedItem}
+          onDelete={(itemId) => {
+            handleDeleteItem(itemId);
+            setEditingItem(null);
+          }}
+        />
       )}
     </div>
   );
