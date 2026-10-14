@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import Link from 'next/link';
 import { UserAccount, UserProfile, DailyLog, BodyMeasurement, MealLog, MealType, DailyAudit, FoodItem, ExerciseItem, WorkoutPlan, LoggedWorkout } from '@/types';
 import {
   loadUserProfile,
@@ -889,6 +890,28 @@ export default function Home() {
             initialTab={rescueInitialTab}
           />
         )}
+
+        {/* Razorpay Merchant Compliance Footer */}
+        <footer className="mt-8 mb-20 px-4 py-6 border-t border-slate-200/60 dark:border-slate-800/60 text-center text-[11px] text-slate-500 dark:text-slate-400 space-y-3">
+          <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1.5 font-medium">
+            <Link href="/pricing" className="hover:text-emerald-500 transition-colors">Pricing</Link>
+            <span>•</span>
+            <Link href="/terms" className="hover:text-emerald-500 transition-colors">Terms of Service</Link>
+            <span>•</span>
+            <Link href="/privacy" className="hover:text-emerald-500 transition-colors">Privacy Policy</Link>
+            <span>•</span>
+            <Link href="/refund-policy" className="hover:text-emerald-500 transition-colors">Refund Policy</Link>
+            <span>•</span>
+            <Link href="/shipping-policy" className="hover:text-emerald-500 transition-colors">Shipping Policy</Link>
+            <span>•</span>
+            <Link href="/contact" className="hover:text-emerald-500 transition-colors">Contact Us</Link>
+            <span>•</span>
+            <Link href="/about" className="hover:text-emerald-500 transition-colors">About</Link>
+          </div>
+          <p className="text-[10px] text-slate-400 dark:text-slate-500">
+            © {new Date().getFullYear()} NutriAI Fitness. All rights reserved. Secure Razorpay payments powered.
+          </p>
+        </footer>
 
         {/* PWA Android / Mobile Install Prompt */}
         <PwaInstallPrompt />
