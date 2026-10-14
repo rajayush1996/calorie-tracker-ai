@@ -76,7 +76,7 @@ export const AppOnboardingCarousel: React.FC<AppOnboardingCarouselProps> = ({ on
       <div className="w-full max-w-md mx-auto flex items-center justify-between pt-2 pb-3 px-1">
         <div className="flex items-center gap-2">
           <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-emerald-500 to-teal-400 flex items-center justify-center text-base shadow-xs shadow-emerald-500/20 text-white font-black">
-            🥑
+            <Flame className="w-4 h-4 text-white" />
           </div>
           <span className="font-black text-slate-900 text-sm tracking-tight">NutriAI</span>
         </div>

@@ -46,7 +46,7 @@ import { DateNavigator } from '@/components/common/DateNavigator';
 import { DaySummaryCard } from '@/components/dashboard/DaySummaryCard';
 import { StickyQuickLogFab } from '@/components/dashboard/StickyQuickLogFab';
 import { getTodayDateString, getYesterdayDateString } from '@/utils/dateUtils';
-import { RotateCcw, Dumbbell, TrendingUp } from 'lucide-react';
+import { RotateCcw, Dumbbell, TrendingUp, Sparkles, ShieldAlert, Moon, Flame } from 'lucide-react';
 import { loadActiveWorkoutProgram } from '@/utils/storage';
 import { MultiWeekWorkoutProgram, ProgramTrainingDay } from '@/types';
 
@@ -181,7 +181,7 @@ export default function Home() {
       <div className="min-h-screen bg-slate-50 flex items-center justify-center text-slate-900">
         <div className="flex flex-col items-center gap-3">
           <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-emerald-500 to-teal-400 flex items-center justify-center text-2xl animate-pulse shadow-md shadow-emerald-500/20">
-            🥑
+            <Flame className="w-6 h-6 text-white" />
           </div>
           <p className="text-sm font-semibold tracking-wide text-slate-500">Loading NutriAI...</p>
         </div>
@@ -665,13 +665,13 @@ export default function Home() {
                   <>
                     <div className="flex items-center gap-2 text-[11px] text-slate-600 dark:text-slate-300">
                       <span className="font-bold text-slate-800 dark:text-slate-200">
-                        🏋️ {activeWorkoutDay.exercises?.length || 6} Exercises
+                        {activeWorkoutDay.exercises?.length || 6} Exercises
                       </span>
                       <span>•</span>
-                      <span>⏱️ {activeWorkoutDay.estimatedDurationMinutes}m</span>
+                      <span>{activeWorkoutDay.estimatedDurationMinutes}m</span>
                       <span>•</span>
                       <span className="text-amber-600 dark:text-amber-400 font-bold">
-                        🔥 ~{activeWorkoutDay.estimatedCaloriesBurn} kcal
+                        ~{activeWorkoutDay.estimatedCaloriesBurn} kcal
                       </span>
                     </div>
 
@@ -742,7 +742,7 @@ export default function Home() {
                     }}
                     className="p-3 bg-amber-50/60 hover:bg-amber-100/60 dark:bg-amber-950/20 dark:hover:bg-amber-950/40 border border-amber-200/60 dark:border-amber-900/30 rounded-2xl active:scale-95 transition-all group"
                   >
-                    <span className="text-xl block mb-1 group-hover:scale-110 transition-transform">🍫</span>
+                    <Sparkles className="w-5 h-5 text-amber-500 mb-1 group-hover:scale-110 transition-transform" />
                     <strong className="text-xs font-bold text-amber-900 dark:text-amber-200 block leading-tight">
                       Craving
                     </strong>
@@ -757,7 +757,7 @@ export default function Home() {
                     }}
                     className="p-3 bg-rose-50/60 hover:bg-rose-100/60 dark:bg-rose-950/20 dark:hover:bg-rose-950/40 border border-rose-200/60 dark:border-rose-900/30 rounded-2xl active:scale-95 transition-all group"
                   >
-                    <span className="text-xl block mb-1 group-hover:scale-110 transition-transform">🍕</span>
+                    <ShieldAlert className="w-5 h-5 text-rose-500 mb-1 group-hover:scale-110 transition-transform" />
                     <strong className="text-xs font-bold text-rose-900 dark:text-rose-200 block leading-tight">
                       Cheat Fix
                     </strong>
@@ -769,7 +769,7 @@ export default function Home() {
                     onClick={() => setActiveTab('audit')}
                     className="p-3 bg-purple-50/60 hover:bg-purple-100/60 dark:bg-purple-950/20 dark:hover:bg-purple-950/40 border border-purple-200/60 dark:border-purple-900/30 rounded-2xl active:scale-95 transition-all group"
                   >
-                    <span className="text-xl block mb-1 group-hover:scale-110 transition-transform">🌙</span>
+                    <Moon className="w-5 h-5 text-purple-500 mb-1 group-hover:scale-110 transition-transform" />
                     <strong className="text-xs font-bold text-purple-900 dark:text-purple-200 block leading-tight">
                       Daily Review
                     </strong>

@@ -11,7 +11,7 @@ interface QuickFoodShortcutsProps {
 
 const FREQUENT_FOODS: Array<{
   name: string;
-  emoji: string;
+  tag: string;
   portion: string;
   weightG: number;
   calories: number;
@@ -23,7 +23,7 @@ const FREQUENT_FOODS: Array<{
 }> = [
   {
     name: '2 Whole Wheat Roti',
-    emoji: '🫓',
+    tag: 'Roti',
     portion: '2 standard rotis',
     weightG: 80,
     calories: 160,
@@ -35,7 +35,7 @@ const FREQUENT_FOODS: Array<{
   },
   {
     name: '1 Cup Milk Chai',
-    emoji: '☕',
+    tag: 'Chai',
     portion: '1 regular cup with milk & 1 tsp sugar',
     weightG: 150,
     calories: 85,
@@ -47,7 +47,7 @@ const FREQUENT_FOODS: Array<{
   },
   {
     name: '1 Scoop Whey Protein',
-    emoji: '🥤',
+    tag: 'Whey',
     portion: '1 scoop (30g) in water',
     weightG: 30,
     calories: 120,
@@ -59,7 +59,7 @@ const FREQUENT_FOODS: Array<{
   },
   {
     name: '2 Boiled Eggs',
-    emoji: '🥚',
+    tag: 'Eggs',
     portion: '2 large whole boiled eggs',
     weightG: 100,
     calories: 140,
@@ -71,7 +71,7 @@ const FREQUENT_FOODS: Array<{
   },
   {
     name: '1 Medium Banana',
-    emoji: '🍌',
+    tag: 'Fruit',
     portion: '1 medium fresh banana',
     weightG: 118,
     calories: 105,
@@ -83,7 +83,7 @@ const FREQUENT_FOODS: Array<{
   },
   {
     name: 'Dal & Steamed Rice',
-    emoji: '🍲',
+    tag: 'Meal',
     portion: '1 small katori dal + 1 cup rice',
     weightG: 250,
     calories: 320,
@@ -95,7 +95,7 @@ const FREQUENT_FOODS: Array<{
   },
   {
     name: '100g Low-Fat Paneer',
-    emoji: '🧀',
+    tag: 'Paneer',
     portion: '100g raw paneer cubes',
     weightG: 100,
     calories: 265,
@@ -107,7 +107,7 @@ const FREQUENT_FOODS: Array<{
   },
   {
     name: '150g Grilled Chicken Breast',
-    emoji: '🍗',
+    tag: 'Chicken',
     portion: '150g boneless grilled chicken',
     weightG: 150,
     calories: 220,
@@ -162,7 +162,9 @@ export const QuickFoodShortcuts: React.FC<QuickFoodShortcutsProps> = ({
             className="flex-shrink-0 p-2.5 bg-white dark:bg-slate-900 hover:bg-emerald-50/50 dark:hover:bg-emerald-950/20 border border-slate-200/80 dark:border-slate-800 rounded-2xl text-left transition-all active:scale-95 group shadow-2xs w-36"
           >
             <div className="flex items-center justify-between mb-1">
-              <span className="text-xl">{food.emoji}</span>
+              <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 px-1.5 py-0.5 rounded-md">
+                {food.tag}
+              </span>
               <span className="w-5 h-5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 group-hover:bg-emerald-500 group-hover:text-white flex items-center justify-center transition-colors">
                 <Plus className="w-3 h-3 stroke-[2.5]" />
               </span>

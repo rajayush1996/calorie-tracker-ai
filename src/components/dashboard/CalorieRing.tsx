@@ -46,22 +46,22 @@ export const CalorieRing: React.FC<CalorieRingProps> = ({ consumed, profile }) =
             </span>
             {profile.goal === 'muscle_gain' && (
               <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-300">
-                💪 Muscle Building
+                Muscle Building
               </span>
             )}
             {profile.goal === 'weight_gain' && (
               <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-300">
-                📈 Weight Gain
+                Weight Gain
               </span>
             )}
             {profile.goal === 'fat_loss' && (
               <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400">
-                🔥 Fat Loss
+                Fat Loss
               </span>
             )}
             {profile.goal === 'maintenance' && (
               <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-purple-50 dark:bg-purple-950/60 text-purple-600 dark:text-purple-300">
-                ⚖️ Maintenance
+                Maintenance
               </span>
             )}
           </div>

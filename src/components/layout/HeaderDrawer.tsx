@@ -65,7 +65,7 @@ export const HeaderDrawer: React.FC<HeaderDrawerProps> = ({
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2.5">
               <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-emerald-500 to-teal-400 flex items-center justify-center text-white font-black text-base shadow-xs shadow-emerald-500/20">
-                🥑
+                <Flame className="w-4 h-4 text-white" />
               </div>
               <div>
                 <h3 className="font-black text-slate-900 dark:text-white text-sm">NutriAI</h3>

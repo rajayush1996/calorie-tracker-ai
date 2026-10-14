@@ -300,10 +300,10 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({
                 }
                 className="w-full p-2.5 text-xs rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white"
               >
-                <option value="fat_loss">🔥 Fat Loss / Cut</option>
-                <option value="muscle_gain">💪 Muscle Growth / Lean Bulk</option>
-                <option value="weight_gain">📈 Weight Gain / Bulking</option>
-                <option value="maintenance">⚖️ Maintenance / Recomposition</option>
+                <option value="fat_loss">Fat Loss / Cut</option>
+                <option value="muscle_gain">Muscle Growth / Lean Bulk</option>
+                <option value="weight_gain">Weight Gain / Bulking</option>
+                <option value="maintenance">Maintenance / Recomposition</option>
               </select>
             </div>
           </div>
@@ -324,7 +324,7 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({
                   const pConf = (GOAL_PACES[formData.goal || 'fat_loss'] || GOAL_PACES.fat_loss)[pKey];
                   return (
                     <option key={pKey} value={pKey}>
-                      {pConf.icon} {pConf.label} ({pConf.calorieDelta > 0 ? `+${pConf.calorieDelta}` : pConf.calorieDelta} kcal)
+                      {pConf.label} ({pConf.calorieDelta > 0 ? `+${pConf.calorieDelta}` : pConf.calorieDelta} kcal)
                     </option>
                   );
                 })}
@@ -341,12 +341,12 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({
                 }
                 className="w-full p-2.5 text-xs rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white"
               >
-                <option value="veg">🥦 Vegetarian</option>
-                <option value="non_veg">🍗 Non-Vegetarian</option>
-                <option value="eggetarian">🥚 Eggetarian</option>
-                <option value="vegan">🌱 Vegan</option>
-                <option value="jain">🥗 Jain</option>
-                <option value="keto">🥩 Keto</option>
+                <option value="veg">Vegetarian</option>
+                <option value="non_veg">Non-Vegetarian</option>
+                <option value="eggetarian">Eggetarian</option>
+                <option value="vegan">Vegan</option>
+                <option value="jain">Jain</option>
+                <option value="keto">Keto</option>
               </select>
             </div>
           </div>
@@ -557,7 +557,7 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({
         {showFreshStartConfirm && (
           <div className="p-3.5 rounded-2xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900/50 space-y-2">
             <p className="text-xs text-rose-900 dark:text-rose-200 font-bold">
-              ⚠️ Start completely fresh? This will wipe all local logs, custom profile, and reset the app as a brand-new clean slate.
+              Start completely fresh? This will wipe all local logs, custom profile, and reset the app as a brand-new clean slate.
             </p>
             <div className="flex gap-2">
               <button

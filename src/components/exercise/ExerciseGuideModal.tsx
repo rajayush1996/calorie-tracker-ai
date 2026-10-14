@@ -799,15 +799,15 @@ export const ExerciseGuideModal: React.FC<ExerciseGuideModalProps> = ({
 
                   <div className="flex flex-wrap items-center gap-2 text-[11px] text-slate-500 dark:text-slate-400">
                     <span className="font-bold text-slate-700 dark:text-slate-200">
-                      📅 {activeProgram.daysPerWeek}
+                      {activeProgram.daysPerWeek}
                     </span>
                     <span>•</span>
-                    <span>🏋️ {activeProgram.equipmentAccess}</span>
+                    <span>{activeProgram.equipmentAccess}</span>
                     {activeProgram.injuryAccommodations && activeProgram.injuryAccommodations !== 'Standard biomechanical progression' && (
                       <>
                         <span>•</span>
                         <span className="text-amber-600 dark:text-amber-400 font-bold">
-                          🛡️ {activeProgram.injuryAccommodations}
+                          {activeProgram.injuryAccommodations}
                         </span>
                       </>
                     )}
@@ -901,7 +901,7 @@ export const ExerciseGuideModal: React.FC<ExerciseGuideModalProps> = ({
                               : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
                           }`}
                         >
-                          <span>📱 Today / Focused</span>
+                          <span>Today / Focused</span>
                         </button>
                         <button
                           type="button"
@@ -912,7 +912,7 @@ export const ExerciseGuideModal: React.FC<ExerciseGuideModalProps> = ({
                               : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
                           }`}
                         >
-                          <span>📋 All Days</span>
+                          <span>All Days</span>
                         </button>
                       </div>
                     </div>
@@ -1075,9 +1075,9 @@ export const ExerciseGuideModal: React.FC<ExerciseGuideModalProps> = ({
                                         </div>
 
                                         <div className="flex items-center gap-2 text-[10px] text-slate-500 dark:text-slate-400 mb-1">
-                                          <span>⏱️ {ex.restSeconds}s rest</span>
+                                          <span>{ex.restSeconds}s rest</span>
                                           <span>•</span>
-                                          <span>🔥 ~{ex.caloriesBurnEstimate} kcal</span>
+                                          <span>~{ex.caloriesBurnEstimate} kcal</span>
                                           {ex.rpeOrIntensity && (
                                             <>
                                               <span>•</span>
@@ -1227,9 +1227,9 @@ export const ExerciseGuideModal: React.FC<ExerciseGuideModalProps> = ({
                                         </span>
                                       </div>
                                       <div className="flex items-center gap-2 text-[10px] text-slate-500 dark:text-slate-400 mb-1">
-                                        <span>⏱️ {ex.restSeconds}s rest</span>
+                                        <span>{ex.restSeconds}s rest</span>
                                         <span>•</span>
-                                        <span>🔥 ~{ex.caloriesBurnEstimate} kcal</span>
+                                        <span>~{ex.caloriesBurnEstimate} kcal</span>
                                         {ex.rpeOrIntensity && (
                                           <>
                                             <span>•</span>
@@ -1348,9 +1348,9 @@ export const ExerciseGuideModal: React.FC<ExerciseGuideModalProps> = ({
                     </label>
                     <div className="grid grid-cols-3 gap-1.5">
                       {[
-                        { id: 'home', label: '🏠 Bodyweight' },
-                        { id: 'dumbbells', label: '💪 Dumbbells' },
-                        { id: 'gym', label: '🏋️ Gym Access' },
+                        { id: 'home', label: 'Bodyweight' },
+                        { id: 'dumbbells', label: 'Dumbbells' },
+                        { id: 'gym', label: 'Gym Access' },
                       ].map((item) => (
                         <button
                           key={item.id}

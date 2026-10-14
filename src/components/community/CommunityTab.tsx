@@ -100,8 +100,8 @@ export const CommunityTab: React.FC<CommunityTabProps> = ({ currentUser, userPro
       authorId: currentUser.id,
       authorName: currentUser.name,
       authorBadge: hasMilestone && sWeight > cWeight
-        ? `-${(sWeight - cWeight).toFixed(1)} kg transformation 🔥`
-        : 'Active NutriAI Member ⭐',
+        ? `-${(sWeight - cWeight).toFixed(1)} kg transformation`
+        : 'Active NutriAI Member',
       timeAgo: 'Just now',
       tag: postTag,
       title: postTitle.trim(),

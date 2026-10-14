@@ -53,7 +53,7 @@ export const Header: React.FC<HeaderProps> = ({
           )}
 
           <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-emerald-500 to-teal-400 flex items-center justify-center shadow-xs shadow-emerald-500/20 text-white font-black text-lg">
-            🥑
+            <Flame className="w-5 h-5 text-white" />
           </div>
           <div>
             <h1 className="font-black text-slate-900 dark:text-white text-base tracking-tight">

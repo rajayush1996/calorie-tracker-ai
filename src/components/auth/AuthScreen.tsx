@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { UserAccount } from '@/types';
 import { signupUser, loginUser } from '@/utils/auth';
-import { Zap, ArrowRight, ShieldCheck, ChevronLeft, CheckCircle2 } from 'lucide-react';
+import { Zap, ArrowRight, ShieldCheck, ChevronLeft, CheckCircle2, Flame } from 'lucide-react';
 
 interface AuthScreenProps {
   onAuthenticated: (user: UserAccount) => void;
@@ -65,7 +65,7 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ onAuthenticated, onBackT
         {/* Brand */}
         <div className="text-center space-y-2">
           <div className="w-13 h-13 rounded-2xl bg-gradient-to-tr from-emerald-500 to-teal-400 flex items-center justify-center mx-auto text-2xl shadow-md shadow-emerald-500/25 text-white font-black">
-            🥑
+            <Flame className="w-7 h-7 text-white" />
           </div>
           <h1 className="text-2xl font-black text-slate-900 tracking-tight">
             NutriAI

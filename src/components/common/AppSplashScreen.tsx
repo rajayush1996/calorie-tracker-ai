@@ -56,7 +56,7 @@ export const AppSplashScreen: React.FC<AppSplashScreenProps> = ({ onComplete }) 
         <div className="relative mb-4">
           <div className="w-20 h-20 rounded-3xl bg-gradient-to-tr from-emerald-500 via-teal-500 to-emerald-400 p-0.5 shadow-2xl shadow-emerald-500/30 flex items-center justify-center transform transition-transform hover:scale-105">
             <div className="w-full h-full bg-slate-950 rounded-[22px] flex items-center justify-center">
-              <span className="text-4xl select-none animate-bounce">🥑</span>
+              <Flame className="w-9 h-9 text-emerald-400" />
             </div>
           </div>
 

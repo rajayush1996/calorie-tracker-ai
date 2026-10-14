@@ -134,10 +134,10 @@ export const RescueModal: React.FC<RescueModalProps> = ({
               </label>
               <div className="flex flex-wrap gap-1.5 mb-2.5">
                 {[
-                  { label: '🍫 Chocolate / Pastry', text: 'Chocolate pastry or brownie' },
-                  { label: '🍟 Chips & Namkeen', text: 'Fried potato chips and salty namkeen' },
-                  { label: '☕ Chai & Biscuits', text: 'Sweet chai with cookies' },
-                  { label: '🍦 Ice Cream', text: 'Creamy vanilla ice cream' },
+                  { label: 'Chocolate / Pastry', text: 'Chocolate pastry or brownie' },
+                  { label: 'Chips & Namkeen', text: 'Fried potato chips and salty namkeen' },
+                  { label: 'Chai & Biscuits', text: 'Sweet chai with cookies' },
+                  { label: 'Ice Cream', text: 'Creamy vanilla ice cream' },
                 ].map((chip, idx) => (
                   <button
                     key={idx}
@@ -196,7 +196,7 @@ export const RescueModal: React.FC<RescueModalProps> = ({
                 </div>
 
                 <div className="flex items-center justify-between text-xs font-bold text-emerald-800 px-1">
-                  <span>Saved: ~{cravingResult.caloriesSaved} kcal! 🔥</span>
+                  <span>Saved: ~{cravingResult.caloriesSaved} kcal</span>
                   <span className="text-slate-500 font-semibold flex items-center gap-1">
                     <Clock className="w-3 h-3 text-emerald-600" /> {cravingResult.prepTime}
                   </span>
@@ -217,7 +217,7 @@ export const RescueModal: React.FC<RescueModalProps> = ({
 
                 {/* Why it works tip */}
                 <p className="text-[11px] text-slate-600 bg-white/60 p-2.5 rounded-xl border border-emerald-100/60 leading-relaxed">
-                  💡 <strong className="text-emerald-800">Why this works: </strong>
+                  <strong className="text-emerald-800">Why this works: </strong>
                   {cravingResult.psychologicalTip}
                 </p>
               </div>
@@ -234,9 +234,9 @@ export const RescueModal: React.FC<RescueModalProps> = ({
               </label>
               <div className="flex flex-wrap gap-1.5 mb-2.5">
                 {[
-                  { label: '🍕 Pizza & Coke Party', text: '3 slices pepperoni pizza and regular coke' },
-                  { label: '🍗 Biryani & Gulab Jamun', text: '1 plate chicken biryani and 2 gulab jamuns' },
-                  { label: '🍔 Burger & French Fries', text: 'Large double cheese burger with fries' },
+                  { label: 'Pizza & Beverage', text: '3 slices pepperoni pizza and regular coke' },
+                  { label: 'Biryani & Dessert', text: '1 plate chicken biryani and 2 gulab jamuns' },
+                  { label: 'Burger & French Fries', text: 'Large double cheese burger with fries' },
                 ].map((chip, idx) => (
                   <button
                     key={idx}

@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { MealType, MealLog, FoodItem } from '@/types';
-import { Plus, ChevronDown, ChevronUp, Trash2, Utensils, RotateCcw, Pencil } from 'lucide-react';
+import { Plus, ChevronDown, ChevronUp, Trash2, Utensils, RotateCcw, Pencil, Sunrise, Sun, Apple, Sunset, Moon } from 'lucide-react';
 import { EditFoodModal } from '@/components/common/EditFoodModal';
 
 interface MealSectionProps {
@@ -14,16 +14,35 @@ interface MealSectionProps {
   onCopyYesterdayMeal?: (mealType: MealType) => void;
 }
 
-const MEAL_CONFIG: Record<MealType, { label: string; icon: string; subtitle: string }> = {
-  breakfast: { label: 'Breakfast', icon: '🌅', subtitle: 'Morning fuel' },
-  lunch: { label: 'Lunch', icon: '☀️', subtitle: 'Midday nutrition' },
-  snack: { label: 'Snacks', icon: '🍎', subtitle: 'Energy boosts' },
-  dinner: { label: 'Dinner', icon: '🌆', subtitle: 'Evening recovery' },
-  meal_1: { label: 'Meal 1', icon: '🌅', subtitle: 'First meal / brunch' },
-  meal_2: { label: 'Meal 2', icon: '☀️', subtitle: 'Midday nutrition' },
-  meal_3: { label: 'Meal 3', icon: '🌆', subtitle: 'Evening recovery' },
-  meal_4: { label: 'Meal 4', icon: '🌙', subtitle: 'Night sustenance' },
-  meal_5: { label: 'Meal 5', icon: '🍇', subtitle: 'Late snack / night bite' },
+const MEAL_CONFIG: Record<MealType, { label: string; subtitle: string }> = {
+  breakfast: { label: 'Breakfast', subtitle: 'Morning fuel' },
+  lunch: { label: 'Lunch', subtitle: 'Midday nutrition' },
+  snack: { label: 'Snacks', subtitle: 'Energy boosts' },
+  dinner: { label: 'Dinner', subtitle: 'Evening recovery' },
+  meal_1: { label: 'Meal 1', subtitle: 'First meal / brunch' },
+  meal_2: { label: 'Meal 2', subtitle: 'Midday nutrition' },
+  meal_3: { label: 'Meal 3', subtitle: 'Evening recovery' },
+  meal_4: { label: 'Meal 4', subtitle: 'Night sustenance' },
+  meal_5: { label: 'Meal 5', subtitle: 'Late snack / night bite' },
+};
+
+const getMealIcon = (type: MealType) => {
+  switch (type) {
+    case 'breakfast':
+    case 'meal_1':
+      return <Sunrise className="w-5 h-5 text-amber-500" />;
+    case 'lunch':
+    case 'meal_2':
+      return <Sun className="w-5 h-5 text-amber-500" />;
+    case 'snack':
+    case 'meal_5':
+      return <Apple className="w-5 h-5 text-emerald-500" />;
+    case 'dinner':
+    case 'meal_3':
+    case 'meal_4':
+    default:
+      return <Sunset className="w-5 h-5 text-indigo-500" />;
+  }
 };
 
 export const MealSection: React.FC<MealSectionProps> = ({
@@ -62,7 +81,7 @@ export const MealSection: React.FC<MealSectionProps> = ({
       {/* Empty State Banner if no meals logged */}
       {totalMealsLogged === 0 && (
         <div className="p-4 rounded-3xl border border-dashed border-slate-200 dark:border-slate-800 bg-white/50 dark:bg-slate-900/30 text-center space-y-1 py-4">
-          <span className="text-2xl block select-none">🥗</span>
+          <Utensils className="w-6 h-6 text-emerald-500 mx-auto block mb-1" />
           <h3 className="text-xs font-black text-slate-800 dark:text-slate-200">
             No meals logged yet today
           </h3>
@@ -102,7 +121,9 @@ export const MealSection: React.FC<MealSectionProps> = ({
                 onClick={() => hasItems && setExpandedMeal(isExpanded ? null : type)}
               >
                 <div className="flex items-center gap-3">
-                  <span className="text-2xl select-none">{config.icon}</span>
+                  <div className="w-8 h-8 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center shrink-0">
+                    {getMealIcon(type)}
+                  </div>
                   <div>
                     <h3 className="text-xs font-black text-slate-900 dark:text-slate-100">
                       {config.label}

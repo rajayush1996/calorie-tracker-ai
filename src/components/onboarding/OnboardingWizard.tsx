@@ -10,7 +10,7 @@ import {
   PACE_CONFIG,
   GOAL_PACES,
 } from '@/utils/nutritionCalculations';
-import { ShieldCheck, ArrowRight, ArrowLeft, Check, Target, Flame, Scale, Ruler } from 'lucide-react';
+import { ShieldCheck, ArrowRight, ArrowLeft, Check, Target, Flame, Scale, Ruler, Dumbbell, TrendingUp } from 'lucide-react';
 
 interface OnboardingWizardProps {
   initialProfile: UserProfile;
@@ -216,12 +216,12 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = ({
                 </label>
                 <div className="grid grid-cols-3 gap-2">
                   {[
-                    { id: 'veg' as DietType, label: '🌱 Veg' },
-                    { id: 'non_veg' as DietType, label: '🍗 Non-Veg' },
-                    { id: 'eggetarian' as DietType, label: '🥚 Eggetarian' },
-                    { id: 'vegan' as DietType, label: '🥗 Vegan' },
-                    { id: 'jain' as DietType, label: '🌿 Jain' },
-                    { id: 'keto' as DietType, label: '🥑 Keto' },
+                    { id: 'veg' as DietType, label: 'Vegetarian' },
+                    { id: 'non_veg' as DietType, label: 'Non-Vegetarian' },
+                    { id: 'eggetarian' as DietType, label: 'Eggetarian' },
+                    { id: 'vegan' as DietType, label: 'Vegan' },
+                    { id: 'jain' as DietType, label: 'Jain' },
+                    { id: 'keto' as DietType, label: 'Keto' },
                   ].map((d) => (
                     <button
                       key={d.id}
@@ -385,10 +385,30 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = ({
               </label>
               <div className="grid grid-cols-2 gap-2">
                 {[
-                  { id: 'fat_loss' as FitnessGoal, label: 'Fat Loss', sub: 'Burn fat & get lean', icon: '🔥' },
-                  { id: 'muscle_gain' as FitnessGoal, label: 'Muscle Growth', sub: 'Hypertrophy & clean bulk', icon: '💪' },
-                  { id: 'weight_gain' as FitnessGoal, label: 'Weight Gain', sub: 'Healthy mass & bulking', icon: '📈' },
-                  { id: 'maintenance' as FitnessGoal, label: 'Maintenance', sub: 'TDEE balance & tone', icon: '⚖️' },
+                  {
+                    id: 'fat_loss' as FitnessGoal,
+                    label: 'Fat Loss',
+                    sub: 'Burn fat & get lean',
+                    icon: <Flame className="w-4 h-4 text-emerald-500" />,
+                  },
+                  {
+                    id: 'muscle_gain' as FitnessGoal,
+                    label: 'Muscle Growth',
+                    sub: 'Hypertrophy & clean bulk',
+                    icon: <Dumbbell className="w-4 h-4 text-emerald-500" />,
+                  },
+                  {
+                    id: 'weight_gain' as FitnessGoal,
+                    label: 'Weight Gain',
+                    sub: 'Healthy mass & bulking',
+                    icon: <TrendingUp className="w-4 h-4 text-emerald-500" />,
+                  },
+                  {
+                    id: 'maintenance' as FitnessGoal,
+                    label: 'Maintenance',
+                    sub: 'TDEE balance & tone',
+                    icon: <Scale className="w-4 h-4 text-emerald-500" />,
+                  },
                 ].map((g) => {
                   const isSelected = goal === g.id;
                   return (
@@ -403,12 +423,14 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = ({
                       }`}
                     >
                       <div className="flex items-center gap-2">
-                        <span className="text-base">{g.icon}</span>
+                        <div className="w-6 h-6 rounded-lg bg-emerald-500/10 dark:bg-emerald-500/20 flex items-center justify-center">
+                          {g.icon}
+                        </div>
                         <div className="font-bold text-xs text-slate-900 dark:text-white">
                           {g.label}
                         </div>
                       </div>
-                      <div className="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5 leading-tight">
+                      <div className="text-[10px] text-slate-500 dark:text-slate-400 mt-1 leading-tight">
                         {g.sub}
                       </div>
                     </button>
@@ -461,8 +483,8 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = ({
                     }`}
                   >
                     <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <span className="text-lg">{pConf.icon}</span>
+                      <div className="flex items-center gap-2.5">
+                        <div className={`w-2 h-2 rounded-full ${isSelected ? 'bg-emerald-500' : 'bg-slate-300 dark:bg-slate-600'}`} />
                         <div>
                           <div className="text-xs font-bold text-slate-900 dark:text-white">
                             {pConf.label}
@@ -525,12 +547,12 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = ({
               </span>
               <h2 className="text-xl font-black text-slate-900 dark:text-white tracking-tight">
                 {goal === 'muscle_gain'
-                  ? '💪 Muscle Growth Blueprint'
+                  ? 'Muscle Growth Blueprint'
                   : goal === 'weight_gain'
-                  ? '📈 Mass Bulking Blueprint'
+                  ? 'Mass Bulking Blueprint'
                   : goal === 'fat_loss'
-                  ? '🔥 Fat Loss Transformation Plan'
-                  : '⚖️ Body Recomposition Blueprint'}
+                  ? 'Fat Loss Transformation Plan'
+                  : 'Body Recomposition Blueprint'}
               </h2>
               <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
                 Calibrated energy and macros specifically tuned for your {goal.replace('_', ' ')} goal.

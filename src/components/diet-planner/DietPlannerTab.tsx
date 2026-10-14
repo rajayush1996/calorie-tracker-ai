@@ -256,11 +256,11 @@ export const DietPlannerTab: React.FC<DietPlannerTabProps> = ({
               </label>
               <div className="flex flex-wrap gap-2">
                 {[
-                  { id: 'veg', label: 'Vegetarian 🥦' },
-                  { id: 'non_veg', label: 'Non-Vegetarian 🍗' },
-                  { id: 'eggetarian', label: 'Eggetarian 🥚' },
-                  { id: 'vegan', label: 'Vegan 🌱' },
-                  { id: 'jain', label: 'Jain 🥗' },
+                  { id: 'veg', label: 'Vegetarian' },
+                  { id: 'non_veg', label: 'Non-Vegetarian' },
+                  { id: 'eggetarian', label: 'Eggetarian' },
+                  { id: 'vegan', label: 'Vegan' },
+                  { id: 'jain', label: 'Jain' },
                 ].map((d) => (
                   <button
                     key={d.id}
@@ -481,7 +481,7 @@ export const DietPlannerTab: React.FC<DietPlannerTabProps> = ({
 
                   {meal.tips && (
                     <p className="text-[11px] text-slate-500 dark:text-slate-400 italic">
-                      💡 {meal.tips}
+                      Tip: {meal.tips}
                     </p>
                   )}
 

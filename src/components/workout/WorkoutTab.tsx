@@ -654,7 +654,7 @@ export const WorkoutTab: React.FC<WorkoutTabProps> = ({
                           <div className="grid grid-cols-2 gap-2 text-[11px]">
                             <div className="p-2.5 rounded-2xl bg-emerald-50/60 dark:bg-emerald-950/30 border border-emerald-100 dark:border-emerald-900/40">
                               <span className="font-bold text-emerald-700 dark:text-emerald-400 block mb-0.5">
-                                🏃 Warm-Up:
+                                Warm-Up:
                               </span>
                               <p className="text-[10px] text-slate-600 dark:text-slate-400 line-clamp-2">
                                 {activeDay.warmup}
@@ -662,7 +662,7 @@ export const WorkoutTab: React.FC<WorkoutTabProps> = ({
                             </div>
                             <div className="p-2.5 rounded-2xl bg-blue-50/60 dark:bg-blue-950/30 border border-blue-100 dark:border-blue-900/40">
                               <span className="font-bold text-blue-700 dark:text-blue-400 block mb-0.5">
-                                🧘 Cool-Down:
+                                Cool-Down:
                               </span>
                               <p className="text-[10px] text-slate-600 dark:text-slate-400 line-clamp-2">
                                 {activeDay.cooldown}

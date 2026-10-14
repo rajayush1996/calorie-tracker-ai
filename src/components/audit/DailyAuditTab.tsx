@@ -147,8 +147,8 @@ export const DailyAuditTab: React.FC<DailyAuditTabProps> = ({
                   <span className="text-sm text-indigo-300">/ 10</span>
                 </div>
               </div>
-              <div className="w-12 h-12 rounded-2xl bg-white/10 backdrop-blur-xs flex items-center justify-center text-2xl">
-                🏆
+              <div className="w-12 h-12 rounded-2xl bg-white/10 backdrop-blur-xs flex items-center justify-center">
+                <Trophy className="w-6 h-6 text-white" />
               </div>
             </div>
 

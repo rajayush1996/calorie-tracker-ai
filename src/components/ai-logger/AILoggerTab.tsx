@@ -245,6 +245,8 @@ export const AILoggerTab: React.FC<AILoggerTabProps> = ({
       onMealSaved(updatedMeal);
       setLastLoggedMeal(updatedMeal);
     }
+  };
+
   const handleSaveEditedItem = (updatedItem: FoodItem, targetMealType?: MealType) => {
     // 1. Update parsedItems in state
     const updatedParsed = parsedItems.map((it) => (it.id === updatedItem.id ? updatedItem : it));
@@ -335,7 +337,7 @@ export const AILoggerTab: React.FC<AILoggerTabProps> = ({
             }
             className="text-[10px] font-bold text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-2.5 py-1 rounded-xl hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
           >
-            {mealNamingMode === 'lifestyle' ? '☀️ Late Riser Mode' : '⏰ Classic Slots'}
+            {mealNamingMode === 'lifestyle' ? 'Late Riser Mode' : 'Classic Slots'}
           </button>
         </div>
 

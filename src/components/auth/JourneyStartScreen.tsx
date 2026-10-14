@@ -11,6 +11,7 @@ import {
   Trophy,
   CheckCircle2,
   ChevronRight,
+  Flame,
 } from 'lucide-react';
 
 interface JourneyStartScreenProps {
@@ -92,7 +93,7 @@ export const JourneyStartScreen: React.FC<JourneyStartScreenProps> = ({ onAuthen
         <div className="flex items-center justify-between border-b border-slate-100 pb-3">
           <div className="flex items-center gap-2.5">
             <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-emerald-500 to-teal-400 flex items-center justify-center text-xl shadow-sm shadow-emerald-500/20 text-white font-black">
-              🥑
+              <Flame className="w-5 h-5 text-white" />
             </div>
             <div>
               <div className="flex items-center gap-1.5">
